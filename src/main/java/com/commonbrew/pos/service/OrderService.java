@@ -3,6 +3,7 @@ package com.commonbrew.pos.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,5 +119,10 @@ public class OrderService {
         summary.setAddonQuantities(addonQuantities);
 
         return summary;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Order> findById(Long id) {
+        return orderRepository.findById(id);
     }
 }

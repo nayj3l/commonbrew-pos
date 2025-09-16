@@ -3,6 +3,7 @@ package com.commonbrew.pos.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Category;
 import com.commonbrew.pos.model.Drink;
+import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.dto.DrinkDto;
 import com.commonbrew.pos.model.dto.OrderSummary;
 import com.commonbrew.pos.service.AddonService;
@@ -60,12 +64,31 @@ public class OrderController {
     // Final order submission
     @PostMapping("/submit")
     public String submitOrder(@RequestParam List<Long> drinkIds,
-                              @RequestParam(required = false) List<Integer> quantities,
-                              @RequestParam(required = false) List<Long> addonIds) {
+                            @RequestParam(required = false) List<Integer> quantities,
+                            @RequestParam(required = false) List<Long> addonIds,
+                            RedirectAttributes redirectAttributes) {
 
-        orderService.createOrder(drinkIds, quantities, addonIds);
-        // return "redirect:/order/summary"; // optionally show order summary
-        return "success"; // optionally show order summary
+        Order savedOrder = orderService.createOrder(drinkIds, quantities, addonIds);
+
+        // Pass orderId as a request parameter on redirect
+        redirectAttributes.addAttribute("orderId", savedOrder.getId());
+        redirectAttributes.addAttribute("totalAmount", savedOrder.getTotalAmount());
+
+        return "redirect:/order/success";
+    }
+
+    @GetMapping("/success")
+    public String showSuccessPage(@RequestParam Long orderId,
+                                @RequestParam Double totalAmount,
+                                Model model) {
+        
+        Order order = orderService.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Order not found"));
+
+        model.addAttribute("orderId", order.getId());
+        model.addAttribute("totalAmount", order.getTotalAmount());
+        return "success";
     }
 
     @PostMapping("/confirm")
