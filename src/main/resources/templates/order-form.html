@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Place Order</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        .category-btn { width: 100%; margin-bottom: 10px; }
+        .drink-btn { margin: 5px; min-width: 100px; }
+        .drinks-panel { height: 500px; overflow-y: auto; }
+        .order-summary { height: 500px; overflow-y: auto; background: #f8f9fa; padding: 10px; }
+        .addons-panel { margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="container-fluid mt-3">
+    <h1>Place Order</h1>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="row">
+        <!-- Left Panel: Categories -->
+        <div class="col-2">
+            <h4>Categories</h4>
+            <div th:each="category : ${categories}">
+                <button type="button" 
+                        class="btn btn-outline-primary category-btn"
+                        th:text="${category.categoryName}"
+                        th:onclick="'loadDrinks(' + ${category.categoryId} + ')'"
+                        ></button>
+            </div>
+        </div>
+
+        <!-- Middle Panel: Drinks -->
+        <div class="col-6">
+            <h4>Drinks</h4>
+            <div class="drinks-panel" id="drinks-panel">
+                <p>Please select a category to see drinks</p>
+            </div>
+
+            <!-- Add-ons -->
+            <div class="addons-panel">
+                <h5>Add-ons</h5>
+                <div th:each="addon : ${addons}" class="form-check mb-2">
+                    <input class="form-check-input addon-checkbox" type="checkbox" 
+                        th:value="${addon.addonId}" th:id="'addon-'+${addon.addonId}"/>
+                    <label class="form-check-label" th:for="'addon-'+${addon.addonId}">
+                        <span th:text="${addon.addonName}"></span> - <span th:text="${addon.price}"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Order Summary -->
+        <div class="col-4">
+            <h4>Current Order</h4>
+            <div class="order-summary" id="order-summary">
+                <!-- Dynamically added drinks will appear here -->
+                <p>No items yet</p>
+            </div>
+            <button class="btn btn-success mt-3" onclick="submitOrder()">Place Order</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Example JS for adding drinks to the order panel
+    let currentOrder = [];
+
+    function addToOrder(button) {
+        const drinkId = button.getAttribute('data-drink-id');
+        const drinkName = button.textContent;
+        const quantity = 1; // default, can add input later
+
+        // Add drink to current order
+        currentOrder.push({ drinkId, drinkName, quantity });
+
+        renderOrder();
+    }
+
+    function renderOrder() {
+        const panel = document.getElementById('order-summary');
+        panel.innerHTML = '';
+        currentOrder.forEach(item => {
+            const p = document.createElement('p');
+            p.textContent = item.drinkName + ' x ' + item.quantity;
+            panel.appendChild(p);
+        });
+    }
+
+    function submitOrder() {
+        // TODO: send currentOrder + selected add-ons to server via form submission or AJAX
+        alert('Submitting order: ' + JSON.stringify(currentOrder));
+    }
+
+    function loadDrinks(categoryId) {
+        fetch(`/order/drinks/${categoryId}`)
+            .then(response => response.json())
+            .then(drinks => {
+                const panel = document.getElementById('drinks-panel');
+                panel.innerHTML = ''; // clear existing buttons
+
+                drinks.forEach(drink => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-outline-success drink-btn';
+                    btn.textContent = drink.drinkName;
+                    btn.dataset.drinkId = drink.drinkId;
+                    btn.onclick = function() { addToOrder(this); };
+                    panel.appendChild(btn);
+                });
+            })
+            .catch(err => console.error(err));
+    }
+</script>
+</body>
+</html>

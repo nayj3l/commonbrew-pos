@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Commonbrew POS - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+<div class="container mt-5 text-center">
+    <h1>Commonbrew POS</h1>
+
+    <div class="d-flex flex-column gap-3 mt-4">
+        <a href="/order" class="btn btn-primary btn-lg d-flex flex-column align-items-center py-4">
+            <i class="bi bi-cart-fill fs-1 mb-2"></i>
+            Order Now
+        </a>
+        <a href="/inventory" class="btn btn-secondary btn-lg d-flex flex-column align-items-center py-4">
+            <i class="bi bi-box-seam fs-1 mb-2"></i>
+            Inventory
+        </a>
+        <a href="/category" class="btn btn-success btn-lg d-flex flex-column align-items-center py-4">
+            <i class="bi bi-list-ul fs-1 mb-2"></i>
+            Drink Categories
+        </a>
+        <a href="/addon-category" class="btn btn-warning btn-lg d-flex flex-column align-items-center py-4">
+            <i class="bi bi-plus-circle fs-1 mb-2"></i>
+            Add-on Categories
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
