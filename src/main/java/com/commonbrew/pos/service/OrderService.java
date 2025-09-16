@@ -68,7 +68,10 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public OrderSummary buildOrderSummary(List<Long> drinkIds, List<Integer> quantities, List<Long> addonIds) {
+    public OrderSummary buildOrderSummary(List<Long> drinkIds,
+                                      List<Integer> quantities,
+                                      List<Long> addonIds,
+                                      List<Integer> addonQuantities) {
         OrderSummary summary = new OrderSummary();
         List<OrderItemDto> items = new ArrayList<>();
         List<OrderItemDto> addons = new ArrayList<>();
@@ -80,7 +83,7 @@ public class OrderService {
                 Long drinkId = drinkIds.get(i);
                 int qty = quantities.get(i);
 
-                Drink drink = drinkRepository.findById(drinkId).get();
+                Drink drink = drinkRepository.findById(drinkId).orElse(null);
                 if (drink != null) {
                     double price = drink.getBasePrice() * qty;
                     total += price;
@@ -90,13 +93,16 @@ public class OrderService {
         }
 
         // Build addons list
-        if (addonIds != null) {
-            for (Long addonId : addonIds) {
-                Addon addon = addonRepository.findById(addonId).get();
+        if (addonIds != null && addonQuantities != null) {
+            for (int i = 0; i < addonIds.size(); i++) {
+                Long addonId = addonIds.get(i);
+                int qty = addonQuantities.get(i);
+
+                Addon addon = addonRepository.findById(addonId).orElse(null);
                 if (addon != null) {
-                    double price = addon.getPrice(); // assume quantity = 1 for addons
+                    double price = addon.getPrice() * qty;
                     total += price;
-                    addons.add(new OrderItemDto(addon.getAddonName(), 1, price));
+                    addons.add(new OrderItemDto(addon.getAddonName(), qty, price));
                 }
             }
         }
@@ -105,10 +111,11 @@ public class OrderService {
         summary.setAddons(addons);
         summary.setTotal(total);
 
-        // Optional: save original IDs to submit form after confirmation
+        // Keep references for re-use in form submission
         summary.setDrinkIds(drinkIds);
         summary.setQuantities(quantities);
         summary.setAddonIds(addonIds);
+        summary.setAddonQuantities(addonQuantities);
 
         return summary;
     }

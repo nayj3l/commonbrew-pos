@@ -52,8 +52,9 @@ public class OrderController {
     @ResponseBody
     public OrderSummary previewOrder(@RequestParam List<Long> drinkIds,
                                     @RequestParam List<Integer> quantities,
-                                    @RequestParam(required = false) List<Long> addonIds) {
-        return orderService.buildOrderSummary(drinkIds, quantities, addonIds);
+                                    @RequestParam(required = false) List<Long> addonIds,
+                                    @RequestParam(required = false) List<Integer> addonQuantities) {
+        return orderService.buildOrderSummary(drinkIds, quantities, addonIds, addonQuantities);
     }
 
     // Final order submission
@@ -69,13 +70,13 @@ public class OrderController {
 
     @PostMapping("/confirm")
     public String confirmOrder(@RequestParam List<Long> drinkIds,
-                            @RequestParam List<Integer> quantities,
-                            @RequestParam(required = false) List<Long> addonIds,
-                            Model model) {
+                           @RequestParam List<Integer> quantities,
+                           @RequestParam(required = false) List<Long> addonIds,
+                           @RequestParam(required = false) List<Integer> addonQuantities,
+                           Model model) {
 
         // Build a summary object to pass to Thymeleaf
-        var orderSummary = orderService.buildOrderSummary(drinkIds, quantities, addonIds);
-
+        OrderSummary orderSummary = orderService.buildOrderSummary(drinkIds, quantities, addonIds, addonQuantities);
         model.addAttribute("orderSummary", orderSummary);
         return "order-receipt"; // Thymeleaf template for receipt
     }

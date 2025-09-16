@@ -19,4 +19,5 @@ public class OrderSummary {
     private List<Long> drinkIds;
     private List<Integer> quantities;
     private List<Long> addonIds;
+    private List<Integer> addonQuantities;
 }
