@@ -19,6 +19,10 @@ public class AddonService {
         return addonRepository.findAll();
     }
 
+    public Addon getAddonById(Long id) {
+        return addonRepository.findById(id).orElse(null);
+    }
+
     public Addon saveAddon(Addon addon) {
         return addonRepository.save(addon);
     }

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Commonbrew POS - Addons</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Addons</h1>
+        <div>
+            <a href="/" class="btn btn-primary me-2">Dashboard</a>
+            <a href="/addon/add" class="btn btn-success">Add Addon</a>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Addon Name</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="addon : ${addons}">
+                <td th:text="${addon.addonName}"></td>
+                <td th:text="'₱' + ${addon.price}"></td>
+                <td>
+                    <a th:href="@{'/addon/edit/' + ${addon.addonId}}" class="btn btn-primary btn-sm">Edit</a>
+                    <a th:href="@{'/addon/delete/' + ${addon.addonId}}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

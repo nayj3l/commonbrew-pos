@@ -4,11 +4,65 @@
     <title>Place Order</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <style>
-        .category-btn { width: 100%; margin-bottom: 10px; }
-        .drink-btn { margin: 5px; min-width: 100px; }
-        .drinks-panel { height: 500px; overflow-y: auto; }
-        .order-summary { height: 500px; overflow-y: auto; background: #f8f9fa; padding: 10px; }
-        .addons-panel { margin-top: 20px; }
+        .category-btn { 
+            width: 100%; 
+            margin-bottom: 10px; 
+        }
+        .drinks-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns fixed */
+            gap: 15px; /* spacing between items */
+        }
+        .drink-btn {
+            background: transparent; /* remove btn color */
+            border: 1px solid #28a745;
+            color: #28a745;
+            width: 90%; /* button fits nicely in the div */
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: normal;
+            word-break: break-word;
+            padding: 0 5px;
+        }
+        .drinks-panel { 
+            height: 500px; 
+            overflow-y: auto; 
+        }
+        .order-summary { 
+            height: 500px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            padding: 10px; 
+        }
+        .addons-panel { 
+            margin-top: 20px; 
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .order-total {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+        }
+        .drink-item {
+            background: #e9ecef; /* light background for the div */
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* center the button horizontally */
+            justify-content: center;
+            height: 100px; /* all items have same height */
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -32,19 +86,36 @@
         <!-- Middle Panel: Drinks -->
         <div class="col-6">
             <h4>Drinks</h4>
-            <div class="drinks-panel" id="drinks-panel">
-                <p>Please select a category to see drinks</p>
+            <div class="drinks-panel">
+                <div class="drinks-container" id="drinks-container">
+                    <!-- Drinks buttons will be rendered here via JS -->
+                    <div th:each="drink : ${drinks}" class="drink-item">
+                        <button type="button"
+                                class="btn btn-outline-success drink-btn"
+                                th:text="${drink.drinkName}"
+                                th:data-drink-id="${drink.drinkId}"
+                                th:data-drink-price="${drink.basePrice}"
+                                onclick="addToOrder(this)">
+                        </button>
+                        <div class="text-center mt-1" th:text="'₱' + ${drink.basePrice}"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Add-ons -->
             <div class="addons-panel">
                 <h5>Add-ons</h5>
-                <div th:each="addon : ${addons}" class="form-check mb-2">
-                    <input class="form-check-input addon-checkbox" type="checkbox" 
-                        th:value="${addon.addonId}" th:id="'addon-'+${addon.addonId}"/>
-                    <label class="form-check-label" th:for="'addon-'+${addon.addonId}">
-                        <span th:text="${addon.addonName}"></span> - <span th:text="${addon.price}"></span>
-                    </label>
+                <div class="row">
+                    <div th:each="addon : ${addons}" class="col-md-4 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input addon-checkbox" type="checkbox" 
+                                   th:value="${addon.addonId}" th:id="'addon-'+${addon.addonId}"
+                                   th:data-addon-price="${addon.price}"/>
+                            <label class="form-check-label" th:for="'addon-'+${addon.addonId}">
+                                <span th:text="${addon.addonName}"></span> - ₱<span th:text="${addon.price}"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -53,62 +124,204 @@
         <div class="col-4">
             <h4>Current Order</h4>
             <div class="order-summary" id="order-summary">
-                <!-- Dynamically added drinks will appear here -->
-                <p>No items yet</p>
+                <!-- Dynamically added items will appear here -->
+                <p class="text-center text-muted">No items yet</p>
             </div>
-            <button class="btn btn-success mt-3" onclick="submitOrder()">Place Order</button>
+            
+            <div class="d-flex justify-content-between mt-3">
+                <span class="order-total">Total: ₱<span id="order-total">0.00</span></span>
+                <button class="btn btn-success" onclick="submitOrder()">Place Order</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     // Example JS for adding drinks to the order panel
-    let currentOrder = [];
+    let currentOrder = {
+        items: [],
+        addons: [],
+        total: 0
+    };
 
     function addToOrder(button) {
         const drinkId = button.getAttribute('data-drink-id');
         const drinkName = button.textContent;
+        const drinkPrice = parseFloat(button.getAttribute('data-drink-price'));
         const quantity = 1; // default, can add input later
 
-        // Add drink to current order
-        currentOrder.push({ drinkId, drinkName, quantity });
+        // Check if this drink is already in the order
+        const existingItemIndex = currentOrder.items.findIndex(item => item.drinkId === drinkId);
+        
+        if (existingItemIndex >= 0) {
+            // Increment quantity if already exists
+            currentOrder.items[existingItemIndex].quantity += 1;
+        } else {
+            // Add new drink to order
+            currentOrder.items.push({ 
+                drinkId, 
+                drinkName, 
+                drinkPrice,
+                quantity 
+            });
+        }
 
+        calculateTotal();
         renderOrder();
+    }
+
+    function calculateTotal() {
+        // Calculate items total
+        let itemsTotal = currentOrder.items.reduce((total, item) => {
+            return total + (item.drinkPrice * item.quantity);
+        }, 0);
+        
+        // Calculate addons total
+        let addonsTotal = currentOrder.addons.reduce((total, addon) => {
+            return total + addon.price;
+        }, 0);
+        
+        currentOrder.total = itemsTotal + addonsTotal;
+        document.getElementById('order-total').textContent = currentOrder.total.toFixed(2);
     }
 
     function renderOrder() {
         const panel = document.getElementById('order-summary');
-        panel.innerHTML = '';
-        currentOrder.forEach(item => {
-            const p = document.createElement('p');
-            p.textContent = item.drinkName + ' x ' + item.quantity;
-            panel.appendChild(p);
+        
+        if (currentOrder.items.length === 0 && currentOrder.addons.length === 0) {
+            panel.innerHTML = '<p class="text-center text-muted">No items yet</p>';
+            return;
+        }
+        
+        let html = '';
+        
+        // Render drink items
+        currentOrder.items.forEach(item => {
+            html += `
+                <div class="order-item">
+                    <div>
+                        <span>${item.drinkName} x${item.quantity}</span>
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="decrementItem(${item.drinkId})">-</button>
+                        <button class="btn btn-sm btn-outline-success" onclick="incrementItem(${item.drinkId})">+</button>
+                    </div>
+                    <div>₱${(item.drinkPrice * item.quantity).toFixed(2)}</div>
+                </div>
+            `;
         });
+        
+        // Render addons
+        currentOrder.addons.forEach(addon => {
+            html += `
+                <div class="order-item">
+                    <div>${addon.addonName}</div>
+                    <div>₱${addon.price.toFixed(2)}</div>
+                </div>
+            `;
+        });
+        
+        panel.innerHTML = html;
+    }
+
+    function incrementItem(drinkId) {
+        const item = currentOrder.items.find(item => item.drinkId == drinkId);
+        if (item) {
+            item.quantity += 1;
+            calculateTotal();
+            renderOrder();
+        }
+    }
+
+    function decrementItem(drinkId) {
+        const itemIndex = currentOrder.items.findIndex(item => item.drinkId == drinkId);
+        if (itemIndex >= 0) {
+            const item = currentOrder.items[itemIndex];
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+            } else {
+                currentOrder.items.splice(itemIndex, 1);
+            }
+            calculateTotal();
+            renderOrder();
+        }
     }
 
     function submitOrder() {
-        // TODO: send currentOrder + selected add-ons to server via form submission or AJAX
-        alert('Submitting order: ' + JSON.stringify(currentOrder));
+        // Get selected addons
+        currentOrder.addons = [];
+        document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+            const addonId = checkbox.value;
+            const addonName = checkbox.nextElementSibling.textContent.split(' - ')[0];
+            const addonPrice = parseFloat(checkbox.getAttribute('data-addon-price'));
+            currentOrder.addons.push({ addonId, addonName, price: addonPrice });
+        });
+
+        calculateTotal();
+        
+        // TODO: send currentOrder to server via form submission or AJAX
+        alert('Order submitted! Total: ₱' + currentOrder.total.toFixed(2));
+        
+        // Reset order
+        currentOrder = { items: [], addons: [], total: 0 };
+        document.querySelectorAll('.addon-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        calculateTotal();
+        renderOrder();
     }
 
     function loadDrinks(categoryId) {
-        fetch(`/order/drinks/${categoryId}`)
-            .then(response => response.json())
+        fetch('/order/drinks/' + categoryId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(drinks => {
-                const panel = document.getElementById('drinks-panel');
-                panel.innerHTML = ''; // clear existing buttons
+                const container = document.getElementById('drinks-container');
+                container.innerHTML = ''; // clear existing buttons
+
+                if (drinks.length === 0) {
+                    container.innerHTML = '<p class="text-center">No drinks available in this category</p>';
+                    return;
+                }
 
                 drinks.forEach(drink => {
+                    const drinkItem = document.createElement('div');
+                    drinkItem.className = 'drink-item';
+                    
                     const btn = document.createElement('button');
                     btn.className = 'btn btn-outline-success drink-btn';
                     btn.textContent = drink.drinkName;
                     btn.dataset.drinkId = drink.drinkId;
+                    btn.dataset.drinkPrice = drink.basePrice;
                     btn.onclick = function() { addToOrder(this); };
-                    panel.appendChild(btn);
+                    
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'text-center mt-1';
+                    priceDiv.textContent = '₱' + drink.basePrice;
+                    
+                    drinkItem.appendChild(btn);
+                    drinkItem.appendChild(priceDiv);
+                    container.appendChild(drinkItem);
                 });
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error('Error loading drinks:', err);
+                const container = document.getElementById('drinks-container');
+                container.innerHTML = '<p class="text-center">Error loading drinks. Please try again.</p>';
+            });
     }
+    
+    // Load drinks from the first category when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstCategoryButton = document.querySelector('.category-btn');
+        if (firstCategoryButton) {
+            const onclickAttr = firstCategoryButton.getAttribute('onclick');
+            const categoryId = onclickAttr.match(/\d+/)[0];
+            loadDrinks(categoryId);
+        }
+    });
 </script>
 </body>
 </html>
