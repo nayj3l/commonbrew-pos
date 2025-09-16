@@ -1,0 +1,33 @@
+<h2>Confirm Your Order</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="item : ${orderSummary.items}">
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.quantity}"></td>
+            <td th:text="'₱' + ${item.price}"></td>
+        </tr>
+        <tr th:each="addon : ${orderSummary.addons}">
+            <td th:text="${addon.name}"></td>
+            <td th:text="${addon.quantity}"></td>
+            <td th:text="'₱' + ${addon.price}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Total: ₱<span th:text="${orderSummary.total}"></span></h4>
+
+<form method="post" th:action="@{/order/submit}">
+    <input type="hidden" name="drinkIds" th:value="${orderSummary.drinkIds}" />
+    <input type="hidden" name="quantities" th:value="${orderSummary.quantities}" />
+    <input type="hidden" name="addonIds" th:value="${orderSummary.addonIds}" />
+    <button class="btn btn-success" type="submit">Confirm Order</button>
+    <a class="btn btn-secondary" href="/order">Cancel/Edit</a>
+</form>

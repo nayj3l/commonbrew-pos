@@ -16,6 +16,7 @@ import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Category;
 import com.commonbrew.pos.model.Drink;
 import com.commonbrew.pos.model.dto.DrinkDto;
+import com.commonbrew.pos.model.dto.OrderSummary;
 import com.commonbrew.pos.service.AddonService;
 import com.commonbrew.pos.service.CategoryService;
 import com.commonbrew.pos.service.DrinkService;
@@ -43,17 +44,40 @@ public class OrderController {
         model.addAttribute("drinks", drinks);
         model.addAttribute("addons", addons);
 
-        return "order-form"; // Thymeleaf template
+        return "order-form";
     }
 
-    // Handle order submission
+    // Generate order summary for confirmation
+    @PostMapping("/preview")
+    @ResponseBody
+    public OrderSummary previewOrder(@RequestParam List<Long> drinkIds,
+                                    @RequestParam List<Integer> quantities,
+                                    @RequestParam(required = false) List<Long> addonIds) {
+        return orderService.buildOrderSummary(drinkIds, quantities, addonIds);
+    }
+
+    // Final order submission
     @PostMapping("/submit")
     public String submitOrder(@RequestParam List<Long> drinkIds,
                               @RequestParam(required = false) List<Integer> quantities,
                               @RequestParam(required = false) List<Long> addonIds) {
 
         orderService.createOrder(drinkIds, quantities, addonIds);
-        return "redirect:/order/summary"; // optionally show order summary
+        // return "redirect:/order/summary"; // optionally show order summary
+        return "success"; // optionally show order summary
+    }
+
+    @PostMapping("/confirm")
+    public String confirmOrder(@RequestParam List<Long> drinkIds,
+                            @RequestParam List<Integer> quantities,
+                            @RequestParam(required = false) List<Long> addonIds,
+                            Model model) {
+
+        // Build a summary object to pass to Thymeleaf
+        var orderSummary = orderService.buildOrderSummary(drinkIds, quantities, addonIds);
+
+        model.addAttribute("orderSummary", orderSummary);
+        return "order-receipt"; // Thymeleaf template for receipt
     }
 
     // Show past orders
