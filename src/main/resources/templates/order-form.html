@@ -63,6 +63,10 @@
             height: 100px; /* all items have same height */
             text-align: center;
         }
+        .addon-checkbox:checked + label {
+            font-weight: bold;
+            color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -110,7 +114,9 @@
                         <div class="form-check">
                             <input class="form-check-input addon-checkbox" type="checkbox" 
                                    th:value="${addon.addonId}" th:id="'addon-'+${addon.addonId}"
-                                   th:data-addon-price="${addon.price}"/>
+                                   th:data-addon-price="${addon.price}" 
+                                   th:data-addon-name="${addon.addonName}"
+                                   onchange="updateAddons()"/>
                             <label class="form-check-label" th:for="'addon-'+${addon.addonId}">
                                 <span th:text="${addon.addonName}"></span> - ₱<span th:text="${addon.price}"></span>
                             </label>
@@ -165,6 +171,27 @@
                 quantity 
             });
         }
+
+        calculateTotal();
+        renderOrder();
+    }
+
+    function updateAddons() {
+        // Clear current addons
+        currentOrder.addons = [];
+        
+        // Get all checked addons
+        document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+            const addonId = checkbox.value;
+            const addonName = checkbox.getAttribute('data-addon-name');
+            const addonPrice = parseFloat(checkbox.getAttribute('data-addon-price'));
+            
+            currentOrder.addons.push({ 
+                addonId, 
+                addonName, 
+                price: addonPrice 
+            });
+        });
 
         calculateTotal();
         renderOrder();
@@ -246,15 +273,7 @@
     }
 
     function submitOrder() {
-        // Get selected addons
-        currentOrder.addons = [];
-        document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
-            const addonId = checkbox.value;
-            const addonName = checkbox.nextElementSibling.textContent.split(' - ')[0];
-            const addonPrice = parseFloat(checkbox.getAttribute('data-addon-price'));
-            currentOrder.addons.push({ addonId, addonName, price: addonPrice });
-        });
-
+        // Get selected addons (already in currentOrder.addons from updateAddons)
         calculateTotal();
         
         // TODO: send currentOrder to server via form submission or AJAX
@@ -321,6 +340,11 @@
             const categoryId = onclickAttr.match(/\d+/)[0];
             loadDrinks(categoryId);
         }
+        
+        // Add event listeners to addon checkboxes
+        document.querySelectorAll('.addon-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateAddons);
+        });
     });
 </script>
 </body>
