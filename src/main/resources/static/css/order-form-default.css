@@ -1,0 +1,17 @@
+.section-title {
+  font-size: 1.5rem;
+  color: #2575fc;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.section-title i {
+  margin-right: 10px;
+  transition: transform 0.3s ease;
+}

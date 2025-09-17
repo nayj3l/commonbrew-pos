@@ -1,0 +1,48 @@
+/* === DRINK TAGS (Secondary) === */
+.drink-btn {
+    composes: tag-btn; /* If using CSS preprocessor, else apply both classes */
+    color: #2575fc; /* Use the primary color for text */
+    background-color: white;
+    border: 2px solid #2575fc; /* Border uses the primary color */
+}
+
+.drink-btn:hover {
+    transform: translateY(-2px);
+    background-color: #f8f9ff; /* Very light blue on hover */
+    box-shadow: 0 5px 12px rgba(38, 117, 252, 0.2);
+}
+
+/* === LAYOUT CONTAINERS === */
+.drinks-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  justify-content: center;
+  background: #f4f6f8;        /* very light grey */
+  padding: 10px;              /* breathing room around tiles */
+  border-radius: 12px;
+}
+
+/* === ITEM WRAPPERS === */
+.drink-item {
+    margin: 4px 8px;
+    display: inline-block;
+    vertical-align: top; /* Aligns items to the top if they have different heights */
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
+@media (max-width: 576px) {
+    .tag-btn {
+        padding: 0.6em 1.1em;
+        font-size: 0.95rem;
+    }
+    .category-item {
+        margin: 4px;
+    }
+    .drink-item {
+        margin: 2px 3px;
+    }
+    .drink-price {
+        font-size: 0.8rem;
+    }
+}
