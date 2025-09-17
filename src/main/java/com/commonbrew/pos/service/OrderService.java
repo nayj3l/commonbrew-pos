@@ -208,7 +208,7 @@ public class OrderService {
         summary.setTotal(total);
 
         // keep references for reuse like before (convenience)
-        summary.setDrinkIds(menuItemIds);
+        summary.setItemIds(menuItemIds);
         summary.setQuantities(quantities);
         // flattening itemAddonIds is out-of-scope for this DTO; keep old fields for compatibility:
         summary.setAddonIds(orderAddonIds);

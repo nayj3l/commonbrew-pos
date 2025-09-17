@@ -1,7 +1,7 @@
 // Calculate order total
 function calculateTotal() {
     let itemsTotal = currentOrder.items.reduce((total, item) => {
-        return total + item.drinkPrice * item.quantity;
+        return total + item.itemPrice * item.quantity;
     }, 0);
 
     let addonsTotal = currentOrder.addons.reduce((total, addon) => {
@@ -32,11 +32,11 @@ function renderOrder() {
         html += `
         <div class="order-item">
             <div>
-                <button class="btn btn-sm btn-danger ms-2" onclick="decrementItem(${item.drinkId})"><i class="bi bi-dash"></i></button>
-                <button class="btn btn-sm btn-success" onclick="incrementItem(${item.drinkId})"><i class="bi bi-plus"></i></button>
-                <span>${item.drinkName} x${item.quantity}</span>
+                <button class="btn btn-sm btn-danger ms-2" onclick="decrementItem(${item.itemId})"><i class="bi bi-dash"></i></button>
+                <button class="btn btn-sm btn-success" onclick="incrementItem(${item.itemId})"><i class="bi bi-plus"></i></button>
+                <span>${item.itemName} x${item.quantity}</span>
             </div>
-            <div>₱${(item.drinkPrice * item.quantity).toFixed(2)}</div>
+            <div>₱${(item.itemPrice * item.quantity).toFixed(2)}</div>
         </div>
         `;
     });
@@ -70,8 +70,8 @@ function confirmOrder() {
     let html = "<ul class='list-group'>";
     currentOrder.items.forEach((item) => {
         html += `<li class="list-group-item d-flex justify-content-between">
-                <span>${item.drinkName} x${item.quantity}</span>
-                <span>₱${(item.drinkPrice * item.quantity).toFixed(2)}</span>
+                <span>${item.itemName} x${item.quantity}</span>
+                <span>₱${(item.itemPrice * item.quantity).toFixed(2)}</span>
             </li>`;
     });
     currentOrder.addons.forEach((addon) => {
@@ -94,8 +94,8 @@ function confirmOrder() {
 
 // Submit the confirmed order
 function submitConfirmedOrder() {
-    document.getElementById("drinkIds").value = currentOrder.items
-        .map((i) => i.drinkId)
+    document.getElementById("itemIds").value = currentOrder.items
+        .map((i) => i.itemId)
         .join(",");
     document.getElementById("quantities").value = currentOrder.items
         .map((i) => i.quantity)

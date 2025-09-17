@@ -70,8 +70,8 @@
           </h4>
 
         <form method="post" th:action="@{/order/submit}" class="mt-4">
-            <div th:each="drinkId, iterStat : ${orderSummary.drinkIds}">
-                <input type="hidden" name="drinkIds" th:value="${drinkId}" />
+            <div th:each="itemId, iterStat : ${orderSummary.itemIds}">
+                <input type="hidden" name="itemIds" th:value="${itemId}" />
                 <input type="hidden" name="quantities" th:value="${orderSummary.quantities[__${iterStat.index}__]}" />
             </div>
 

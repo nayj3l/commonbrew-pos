@@ -16,7 +16,7 @@ public class OrderSummary {
     private List<OrderItemDto> addons;
     private double total;
 
-    private List<Long> drinkIds;
+    private List<Long> itemIds;
     private List<Integer> quantities;
     private List<Long> addonIds;
     private List<Integer> addonQuantities;

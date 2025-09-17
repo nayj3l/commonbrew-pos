@@ -1,21 +1,21 @@
-// Add drink to order
+// Add item to order
 function addToOrder(button) {
-    const drinkId = button.getAttribute("data-drink-id");
-    const drinkName = button.textContent;
-    const drinkPrice = parseFloat(button.getAttribute("data-drink-price"));
+    const itemId = button.getAttribute("data-item-id");
+    const itemName = button.textContent;
+    const itemPrice = parseFloat(button.getAttribute("data-item-price"));
     const quantity = 1;
 
     const existingItemIndex = currentOrder.items.findIndex(
-        (item) => item.drinkId === drinkId
+        (item) => item.itemId === itemId
     );
 
     if (existingItemIndex >= 0) {
         currentOrder.items[existingItemIndex].quantity += 1;
     } else {
         currentOrder.items.push({
-            drinkId,
-            drinkName,
-            drinkPrice,
+            itemId,
+            itemName,
+            itemPrice,
             quantity,
         });
     }
@@ -57,8 +57,8 @@ function updateAddons() {
 }
 
 // Increment item quantity
-function incrementItem(drinkId) {
-    const item = currentOrder.items.find((item) => item.drinkId == drinkId);
+function incrementItem(itemId) {
+    const item = currentOrder.items.find((item) => item.itemId == itemId);
     if (item) {
         item.quantity += 1;
         calculateTotal();
@@ -67,9 +67,9 @@ function incrementItem(drinkId) {
 }
 
 // Decrement item quantity
-function decrementItem(drinkId) {
+function decrementItem(itemId) {
     const itemIndex = currentOrder.items.findIndex(
-        (item) => item.drinkId == drinkId
+        (item) => item.itemId == itemId
     );
     if (itemIndex >= 0) {
         const item = currentOrder.items[itemIndex];

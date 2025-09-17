@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (firstCategoryButton) {
         const onclickAttr = firstCategoryButton.getAttribute("onclick");
         const categoryId = onclickAttr.match(/\d+/)[0];
-        loadDrinks(categoryId);
+        loadItems(categoryId);
     }
 
     document.querySelectorAll(".addon-checkbox").forEach((checkbox) => {
