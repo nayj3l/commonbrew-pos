@@ -45,11 +45,11 @@ public class OrderController {
         List<MenuItem> menuItems = itemService.getAllItems();
         List<Addon> addons = addonService.getAllAddons();
 
-        model.addAttribute("categories", menu);
+        model.addAttribute("menu", menu);
         model.addAttribute("items", menuItems);
         model.addAttribute("addons", addons);
 
-        return "order-form";
+        return "order";
     }
 
     @PostMapping("/preview")
@@ -69,12 +69,12 @@ public class OrderController {
         List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
 
         return orderService.buildOrderSummary(
-                itemIds,          // menuItemIds
+                itemIds,
                 quantities,
-                variantIds,        // optional per-item variant choices
-                itemAddonIds,      // per-item addons parsed
-                orderAddonIds,     // order-level addons
-                addonQuantities    // order-level addon quantities
+                variantIds,
+                itemAddonIds,
+                orderAddonIds,
+                addonQuantities
         );
     }
 
