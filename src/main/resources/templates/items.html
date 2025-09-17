@@ -279,6 +279,48 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
         }
 
+        /* Preview Modal Specific Styles */
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: var(--dark);
+        }
+
+        .detail-value {
+            flex: 1;
+            color: var(--gray);
+        }
+
+        .variant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .variant-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .variant-name {
+            font-weight: 500;
+        }
+
+        .variant-price {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
         /* Animations */
         @keyframes fadeIn {
             from {
@@ -356,6 +398,14 @@
             .btn {
                 flex: 1;
             }
+            
+            .detail-row {
+                flex-direction: column;
+            }
+            
+            .detail-label {
+                margin-bottom: 4px;
+            }
         }
     </style>
 </head>
@@ -373,7 +423,10 @@
 
         <!-- Items as Cards -->
         <div class="items-list">
-            <div class="item-card" th:each="item : ${menuItems}" th:data-item-id="${item.id}">
+            <div class="item-card" th:each="item : ${menuItems}" 
+                 th:data-item-id="${item.id}"
+                 th:data-item-name="${item.name}"
+                 th:data-item-variants="${#strings.listJoin(item.variants.![variantName + ':' + #numbers.formatDecimal(price, 1, 2)], ';')}">
                 <div class="card-content">
                     <h5 class="card-title" th:text="${item.name}">Item Name</h5>
                     <div class="action-buttons">
@@ -404,31 +457,32 @@
         </div>
     </div>
 
-    <!-- Add Variant Modal -->
-    <div class="modal fade" id="variantModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+    <!-- Item Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Variant</h5>
+                    <h5 class="modal-title" id="previewTitle">Item Details</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{'/menu/' + ${menu.id} + '/item/{itemId}/variant/add'}" method="post">
-                    <input type="hidden" name="itemId" id="modalItemId" value="">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="variantName" class="form-label">Variant Name</label>
-                            <input type="text" class="form-control" id="variantName" name="variantName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="variantPrice" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="variantPrice" name="price" step="0.01" min="0" required>
+                <div class="modal-body">
+                    <div class="detail-row">
+                        <div class="detail-label">Item Name:</div>
+                        <div class="detail-value" id="previewName"></div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-label">Variants:</div>
+                        <div class="detail-value">
+                            <div id="variantList">
+                                <!-- Variants will be injected here -->
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Variant</button>
-                    </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -438,20 +492,46 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Initialize Bootstrap modal
-        const variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
-        
-        // Add click handler for item cards
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+
         document.addEventListener('DOMContentLoaded', function () {
             const itemCards = document.querySelectorAll('.item-card');
-            
+
             itemCards.forEach(card => {
                 card.addEventListener('click', function (e) {
-                    // Only open modal if not clicking on action buttons
                     if (!e.target.closest('.action-buttons')) {
-                        const itemId = this.getAttribute('data-item-id');
-                        document.getElementById('modalItemId').value = itemId;
-                        variantModal.show();
+                        const itemName = this.dataset.itemName;
+                        const variants = this.dataset.itemVariants
+                            ? this.dataset.itemVariants.split(';').map(v => {
+                                const [name, price] = v.split(':');
+                                return { variantName: name, price: parseFloat(price) };
+                            }) 
+                            : [];
+
+                        document.getElementById('previewTitle').textContent = itemName + ' Details';
+                        document.getElementById('previewName').textContent = itemName;
+
+                        const variantList = document.getElementById('variantList');
+                        variantList.innerHTML = '';
+                        
+                        if (variants.length > 0) {
+                            variants.forEach(v => {
+                                const variantDiv = document.createElement('div');
+                                variantDiv.classList.add('variant-item');
+                                variantDiv.innerHTML = `
+                                    <div class="variant-name">${v.variantName}</div>
+                                    <div class="variant-price">₱${v.price.toFixed(2)}</div>
+                                `;
+                                variantList.appendChild(variantDiv);
+                            });
+                        } else {
+                            const noVariants = document.createElement('div');
+                            noVariants.classList.add('text-center', 'py-3');
+                            noVariants.textContent = 'No variants available for this item';
+                            variantList.appendChild(noVariants);
+                        }
+
+                        previewModal.show();
                     }
                 });
             });
