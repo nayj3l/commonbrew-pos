@@ -2,34 +2,276 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>CommonBrew POS - Dashboard</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.4s ease-out;
+        }
+        
+        .app-logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        
+        .app-subtitle {
+            color: var(--gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px 20px;
+            transition: var(--transition);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: none;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-icon {
+            font-size: 42px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+        }
+        
+        .order-card .card-icon {
+            background: linear-gradient(135deg, #4361ee, #4895ef);
+        }
+        
+        .inventory-card .card-icon {
+            background: linear-gradient(135deg, #7209b7, #b5179e);
+        }
+        
+        .menu-card .card-icon {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+        }
+        
+        .addon-card .card-icon {
+            background: linear-gradient(135deg, #f9c74f, #f9844a);
+        }
+        
+        .card-title {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .card-description {
+            color: var(--gray);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 5px;
+        }
+        
+        .app-footer {
+            text-align: center;
+            color: var(--gray);
+            font-size: 12px;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Stagger animation for cards */
+        .dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+        .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+        .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+        .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .app-logo {
+                font-size: 32px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .dashboard-card {
+                padding: 20px 15px;
+            }
+            
+            .card-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 32px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5 text-center">
-    <h1>CommonBrew POS</h1>
+<div class="container">
+    <div class="app-header">
+        <div class="app-logo">CommonBrew POS</div>
+        <div class="app-subtitle">Point of Sale System</div>
+    </div>
 
-    <div class="d-flex flex-column gap-3 mt-4">
-        <a href="/order" class="btn btn-primary btn-lg d-flex flex-column align-items-center py-4">
-            <i class="bi bi-cart-fill fs-1 mb-2"></i>
-            Order Now
+    <div class="dashboard-grid">
+        <a href="/order" class="dashboard-card order-card">
+            <div class="card-icon">
+                <i class="bi bi-cart-fill"></i>
+            </div>
+            <div class="card-title">Order Now</div>
+            <div class="card-description">Create new orders</div>
         </a>
-        <a href="/inventory" class="btn btn-secondary btn-lg d-flex flex-column align-items-center py-4">
-            <i class="bi bi-box-seam fs-1 mb-2"></i>
-            Inventory
+        
+        <a href="/inventory" class="dashboard-card inventory-card">
+            <div class="card-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div class="card-title">Inventory</div>
+            <div class="card-description">Manage stock levels</div>
         </a>
-        <a href="/menu" class="btn btn-success btn-lg d-flex flex-column align-items-center py-4">
-            <i class="bi bi-list-ul fs-1 mb-2"></i>
-            Menu
+        
+        <a href="/menu" class="dashboard-card menu-card">
+            <div class="card-icon">
+                <i class="bi bi-list-ul"></i>
+            </div>
+            <div class="card-title">Menu</div>
+            <div class="card-description">Edit menu items</div>
         </a>
-        <a href="/addon" class="btn btn-warning btn-lg d-flex flex-column align-items-center py-4">
-            <i class="bi bi-plus-circle fs-1 mb-2"></i>
-            Add-on Categories
+        
+        <a href="/addon" class="dashboard-card addon-card">
+            <div class="card-icon">
+                <i class="bi bi-plus-circle"></i>
+            </div>
+            <div class="card-title">Add-ons</div>
+            <div class="card-description">Manage add-on categories</div>
         </a>
+    </div>
+
+    <div class="app-footer">
+        © 2023 CommonBrew POS System v1.2
     </div>
 </div>
 
+<script>
+    // Add subtle interactive effects
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.dashboard-card');
+        
+        cards.forEach(card => {
+            card.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            
+            card.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+        });
+        
+        // Add animation to the header
+        const header = document.querySelector('.app-header');
+        if (header) {
+            setTimeout(() => {
+                header.style.transform = 'translateY(-5px)';
+                
+                setTimeout(() => {
+                    header.style.transform = '';
+                }, 150);
+            }, 300);
+        }
+    });
+</script>
 </body>
 </html>
