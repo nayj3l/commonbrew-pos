@@ -5,6 +5,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +14,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "addons")
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Addon {
   
     @Id
@@ -19,6 +23,7 @@ public class Addon {
     private Long addonId;
 
     private String addonName;
+
     private Double price;
 
 }

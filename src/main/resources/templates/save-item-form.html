@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Item Form</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 20px;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header i {
+            font-size: 24px;
+            color: var(--primary);
+            margin-right: 12px;
+        }
+
+        h2 {
+            color: var(--dark);
+            font-weight: 700;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 16px;
+            transition: var(--transition);
+            background-color: var(--light);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        .btn {
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-success {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: var(--gray);
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .card {
+                padding: 25px 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Loading animation for form submission */
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <i class="fas fa-utensils"></i>
+                <h2 th:text="${item.id} != null ? 'Edit Menu Item' : 'Add Item'">Add/Edit Menu Item</h2>
+            </div>
+
+            <form th:action="@{'/menu/' + ${menu.id} + '/item/save'}" th:object="${item}" method="post" id="menuForm">
+                <input type="hidden" th:field="*{id}" />
+                <input type="hidden" name="menuId" th:value="${menu.id}" />
+                <div class="mb-4">
+                    <label class="form-label">Item Name</label>
+                    <input type="text" th:field="*{name}" class="form-control" placeholder="Enter item name" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Variants</label>
+                    <div id="variants-container">
+                        <div th:each="variant, iterStat : *{variants}" class="variant-row mb-2">
+                            <input type="hidden" th:field="*{variants[__${iterStat.index}__].variantId}" />
+                            <div class="row g-2">
+                                <div class="col">
+                                    <input type="text" th:field="*{variants[__${iterStat.index}__].variantName}"
+                                        class="form-control" placeholder="Variant name" required>
+                                </div>
+                                <div class="col">
+                                    <input type="number" step="0.01" th:field="*{variants[__${iterStat.index}__].price}"
+                                        class="form-control" placeholder="Price" required>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-danger"
+                                        onclick="removeVariant(this)">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary mt-2" onclick="addVariant()">Add Variant</button>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">
+                        <span class="submit-text">Save</span>
+                        <div class="loading"></div>
+                    </button>
+                    <a th:href="@{'/menu/' + ${menu.id}}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <p class="text-center text-muted">© 2025 CommonBrew Batasan Hills</p>
+    </div>
+
+    <script>
+        function addVariant() {
+            const container = document.getElementById('variants-container');
+            const index = container.children.length;
+            const row = document.createElement('div');
+            row.className = 'variant-row mb-2';
+            row.innerHTML = `
+        <div class="row g-2">
+            <div class="col">
+                <input type="text" name="variants[${index}].variantName" class="form-control" placeholder="Variant name" required>
+            </div>
+            <div class="col">
+                <input type="number" step="0.01" name="variants[${index}].price" class="form-control" placeholder="Price" required>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-danger" onclick="removeVariant(this)">Remove</button>
+            </div>
+        </div>
+    `;
+            container.appendChild(row);
+        }
+
+        function removeVariant(btn) {
+            btn.closest('.variant-row').remove();
+        }
+
+        // Form submission feedback
+        document.getElementById('menuForm').addEventListener('submit', function () {
+            const submitBtn = this.querySelector('.btn-success');
+            const submitText = submitBtn.querySelector('.submit-text');
+            const loading = submitBtn.querySelector('.loading');
+
+            submitText.textContent = 'Saving...';
+            loading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+        });
+
+        // Add subtle animation to input when focused
+        const formInput = document.querySelector('.form-control');
+        if (formInput) {
+            formInput.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+
+            formInput.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        }
+    </script>
+</body>
+
+</html>

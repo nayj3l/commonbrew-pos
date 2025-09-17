@@ -14,19 +14,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "menu")
 @Data
 @NoArgsConstructor
-public class Category {
+public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long categoryId;
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String code;
 
     @Column(nullable = false, unique = true)
-    private String categoryName;
+    private String name;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Drink> drinks;
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MenuItem> items;
 
 }

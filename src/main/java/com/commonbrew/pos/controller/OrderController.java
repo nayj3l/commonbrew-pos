@@ -1,5 +1,6 @@
 package com.commonbrew.pos.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +17,14 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.commonbrew.pos.model.Addon;
-import com.commonbrew.pos.model.Category;
-import com.commonbrew.pos.model.Drink;
+import com.commonbrew.pos.model.Menu;
+import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
-import com.commonbrew.pos.model.dto.DrinkDto;
+import com.commonbrew.pos.model.dto.MenuItemDto;
 import com.commonbrew.pos.model.dto.OrderSummary;
 import com.commonbrew.pos.service.AddonService;
-import com.commonbrew.pos.service.CategoryService;
-import com.commonbrew.pos.service.DrinkService;
+import com.commonbrew.pos.service.MenuService;
+import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,44 +34,76 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final DrinkService drinkService;
+    private final MenuItemService itemService;
     private final AddonService addonService;
     private final OrderService orderService;
-    private final CategoryService categoryService;
+    private final MenuService menuService;
 
     @GetMapping
     public String showOrderPage(Model model) {
-        List<Category> categories = categoryService.getAllCategories();
-        List<Drink> drinks = drinkService.getAllDrinks();
+        List<Menu> menu = menuService.getAllMenu();
+        List<MenuItem> menuItems = itemService.getAllItems();
         List<Addon> addons = addonService.getAllAddons();
 
-        model.addAttribute("categories", categories);
-        model.addAttribute("drinks", drinks);
+        model.addAttribute("categories", menu);
+        model.addAttribute("items", menuItems);
         model.addAttribute("addons", addons);
 
         return "order-form";
     }
 
-    // Generate order summary for confirmation
     @PostMapping("/preview")
     @ResponseBody
-    public OrderSummary previewOrder(@RequestParam List<Long> drinkIds,
-                                    @RequestParam List<Integer> quantities,
-                                    @RequestParam(required = false) List<Long> addonIds,
-                                    @RequestParam(required = false) List<Integer> addonQuantities) {
-        return orderService.buildOrderSummary(drinkIds, quantities, addonIds, addonQuantities);
+    public OrderSummary previewOrder(
+            @RequestParam("itemIds") List<Long> itemIds,
+            @RequestParam("quantities") List<Integer> quantities,
+            @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
+            @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
+            @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
+            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities) {
+
+        if (itemIds == null || quantities == null || itemIds.size() != quantities.size()) {
+            throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
+        }
+
+        List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
+
+        return orderService.buildOrderSummary(
+                itemIds,          // menuItemIds
+                quantities,
+                variantIds,        // optional per-item variant choices
+                itemAddonIds,      // per-item addons parsed
+                orderAddonIds,     // order-level addons
+                addonQuantities    // order-level addon quantities
+        );
     }
 
-    // Final order submission
+    // Final order submission (redirect to success page)
     @PostMapping("/submit")
-    public String submitOrder(@RequestParam List<Long> drinkIds,
-                            @RequestParam(required = false) List<Integer> quantities,
-                            @RequestParam(required = false) List<Long> addonIds,
-                            RedirectAttributes redirectAttributes) {
+    public String submitOrder(
+            @RequestParam("itemIds") List<Long> itemIds,
+            @RequestParam("quantities") List<Integer> quantities,
+            @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
+            @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
+            @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
+            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
+            RedirectAttributes redirectAttributes) {
 
-        Order savedOrder = orderService.createOrder(drinkIds, quantities, addonIds);
+        if (itemIds == null || quantities == null || itemIds.size() != quantities.size()) {
+            throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
+        }
 
-        // Pass orderId as a request parameter on redirect
+        List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
+
+        Order savedOrder = orderService.createOrder(
+                itemIds,           // menuItemIds
+                quantities,
+                variantIds,         // optional
+                itemAddonIds,       // per-item addon lists
+                orderAddonIds,      // order-level addons
+                addonQuantities     // order-level addon quantities
+        );
+
         redirectAttributes.addAttribute("orderId", savedOrder.getId());
         redirectAttributes.addAttribute("totalAmount", savedOrder.getTotalAmount());
 
@@ -92,17 +125,75 @@ public class OrderController {
     }
 
     @PostMapping("/confirm")
-    public String confirmOrder(@RequestParam List<Long> drinkIds,
-                           @RequestParam List<Integer> quantities,
-                           @RequestParam(required = false) List<Long> addonIds,
-                           @RequestParam(required = false) List<Integer> addonQuantities,
-                           Model model) {
+    public String confirmOrder(
+            @RequestParam("itemIds") List<Long> itemIds,
+            @RequestParam("quantities") List<Integer> quantities,
+            // optional: preferred to pass explicit variant IDs for each line (can be null)
+            @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
+            // optional: per-item addons as CSV strings (one CSV string per line item).
+            // e.g. itemAddonCsv = ["5,6", "", "3"] => first item has addons 5 and 6, second none, third addon 3
+            @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
+            // order-level addons (old behavior)
+            @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
+            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
+            Model model) {
 
-        // Build a summary object to pass to Thymeleaf
-        OrderSummary orderSummary = orderService.buildOrderSummary(drinkIds, quantities, addonIds, addonQuantities);
+        // Basic validation: make sure required lists align
+        if (itemIds == null || quantities == null || itemIds.size() != quantities.size()) {
+            throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
+        }
+
+        // Parse per-item addon CSVs into List<List<Long>>
+        List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
+
+        // Call the updated service method (menuItemIds == itemIds)
+        OrderSummary orderSummary = orderService.buildOrderSummary(
+                itemIds,                 // menuItemIds
+                quantities,
+                variantIds,               // may be null
+                itemAddonIds,             // per-item addons parsed
+                orderAddonIds,            // order-level addons
+                addonQuantities           // order-level addon quantities
+        );
+
         model.addAttribute("orderSummary", orderSummary);
-        return "order-receipt"; // Thymeleaf template for receipt
+        return "order-receipt";
     }
+
+    /**
+     * Helper: convert list of CSV strings into List<List<Long>> with same size as itemsCount.
+     * If itemAddonCsv is null, returns a list of nulls to indicate "no per-item addons".
+     */
+    private List<List<Long>> parseItemAddonCsv(List<String> itemAddonCsv, int itemsCount) {
+        if (itemAddonCsv == null) {
+            // keep it null for the service (service accepts null)
+            return null;
+        }
+
+        List<List<Long>> parsed = new ArrayList<>(itemsCount);
+        for (int i = 0; i < itemsCount; i++) {
+            if (i < itemAddonCsv.size() && itemAddonCsv.get(i) != null && !itemAddonCsv.get(i).trim().isEmpty()) {
+                String csv = itemAddonCsv.get(i).trim();
+                String[] parts = csv.split(",");
+                List<Long> ids = new ArrayList<>();
+                for (String p : parts) {
+                    String s = p.trim();
+                    if (!s.isEmpty()) {
+                        try {
+                            ids.add(Long.parseLong(s));
+                        } catch (NumberFormatException ex) {
+                            // ignore invalid tokens (or throw if you prefer strict)
+                        }
+                    }
+                }
+                parsed.add(ids);
+            } else {
+                parsed.add(null); // no addons for this item
+            }
+        }
+        return parsed;
+    }
+
 
     // Show past orders
     @GetMapping("/history")
@@ -111,16 +202,14 @@ public class OrderController {
         return "order-history";
     }
 
-    @GetMapping("/drinks/{categoryId}")
+    @GetMapping("/items/{categoryId}")
     @ResponseBody
-    public List<DrinkDto> getDrinksByCategory(@PathVariable Long categoryId) {
-        List<Drink> drinks = drinkService.getDrinksByCategory(categoryId);
-        return drinks.stream()
-                .map(drink -> new DrinkDto(
-                        drink.getDrinkId(),
-                        drink.getDrinkName(),
-                        drink.getBasePrice(),
-                        drink.getUpsizePrice()))
+    public List<MenuItemDto> getItemsByCategory(@PathVariable Long menuId) {
+        List<MenuItem> items = itemService.getMenuItemsByMenuId(menuId);
+        return items.stream()
+                .map(item -> new MenuItemDto(
+                        item.getId(),
+                        item.getName()))
                 .collect(Collectors.toList());
     }
 

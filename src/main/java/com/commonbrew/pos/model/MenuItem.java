@@ -1,6 +1,7 @@
 package com.commonbrew.pos.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -18,35 +20,44 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "drinks")
+@Table(name = "menu_items")
 @Data
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Drink {
+public class MenuItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long drinkId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "menu_id", nullable = false)
     @JsonIgnore
-    private Category category;
+    private Menu menu;
 
     @Column(nullable = false)
-    private String drinkName;
+    private String name;
 
-    @Column(nullable = false)
-    private Double basePrice;
+    // Variants (Regular, Upsize, Slice, 4-inch, etc.)
+    @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemVariant> variants;
 
-    @Column(nullable = false)
-    private Double upsizePrice;
+   @ManyToMany
+    @JoinTable(
+        name = "menu_item_addon",
+        joinColumns = @JoinColumn(name = "menu_item_id"),
+        inverseJoinColumns = @JoinColumn(name = "addon_id")
+    )
+    private List<Addon> allowedAddons;
 
     // Auditing fields
     @CreatedDate

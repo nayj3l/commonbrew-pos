@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${menu.name} + ' - Items'">Items</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        .container-fluid {
+            max-width: 100%;
+            padding: 16px;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .header h1 {
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .back-btn {
+            background: white;
+            color: var(--gray);
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #f8f9fa;
+            border-color: var(--gray);
+        }
+
+        /* Item Card Styles */
+        .items-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease-out;
+            border: none;
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 18px;
+            margin: 0;
+            color: var(--dark);
+            flex: 1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(to right, #ff6b6b, #ff9e7d);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(to right, #ff9e7d, #ff6b6b);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+            color: white;
+        }
+
+        /* Variants Pills */
+        .variants-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .variant-pill {
+            background: linear-gradient(to right, #f1f5f9, #e2e8f0);
+            color: #475569;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .variant-price {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Add Item Button */
+        .add-item-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .add-item-btn {
+            background: linear-gradient(to right, var(--success), #3a86ff);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: var(--transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            border: none;
+        }
+
+        .add-item-btn:hover {
+            background: linear-gradient(to right, #3a86ff, var(--success));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.4);
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            border-bottom: none;
+            padding: 16px 20px;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e2e8f0;
+            padding: 16px 20px;
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stagger animation for cards */
+        .item-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .item-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .item-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .item-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .item-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 576px) {
+            .items-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container-fluid {
+                max-width: 720px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .card-content {
+                flex-direction: row !important;
+                align-items: flex-start;
+            }
+
+            .action-buttons {
+                width: auto;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="header">
+            <h1 th:text="${menu.name} + ' Items'">Menu Items</h1>
+            <a href="/menu" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back</span>
+            </a>
+        </div>
+
+        <!-- Items as Cards -->
+        <div class="items-list">
+            <div class="item-card" th:each="item : ${menuItems}" th:data-item-id="${item.id}">
+                <div class="card-content">
+                    <h5 class="card-title" th:text="${item.name}">Item Name</h5>
+                    <div class="action-buttons">
+                        <a th:href="@{'/menu/' + ${menu.id} + '/item/edit/' + ${item.id}}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a th:href="@{'/menu/' + ${menu.id} + '/item/delete/' + ${item.id}}" class="btn btn-danger">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </div>
+                </div>
+                <!-- Variants Display -->
+                <div class="variants-container" th:if="${item.variants} and ${#lists.size(item.variants) > 0}">
+                    <span class="variant-pill" th:each="variant : ${item.variants}">
+                        <span th:text="${variant.variantName}"></span>
+                        <span class="variant-price" th:text="'₱' + ${#numbers.formatDecimal(variant.price, 1, 2)}"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Item Button -->
+        <div class="add-item-container">
+            <a th:href="@{'/menu/' + ${menu.id} + '/item/add'}" class="add-item-btn">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add New Item</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Add Variant Modal -->
+    <div class="modal fade" id="variantModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Variant</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{'/menu/' + ${menu.id} + '/item/{itemId}/variant/add'}" method="post">
+                    <input type="hidden" name="itemId" id="modalItemId" value="">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="variantName" class="form-label">Variant Name</label>
+                            <input type="text" class="form-control" id="variantName" name="variantName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="variantPrice" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="variantPrice" name="price" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Variant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap and jQuery Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Initialize Bootstrap modal
+        const variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
+        
+        // Add click handler for item cards
+        document.addEventListener('DOMContentLoaded', function () {
+            const itemCards = document.querySelectorAll('.item-card');
+            
+            itemCards.forEach(card => {
+                card.addEventListener('click', function (e) {
+                    // Only open modal if not clicking on action buttons
+                    if (!e.target.closest('.action-buttons')) {
+                        const itemId = this.getAttribute('data-item-id');
+                        document.getElementById('modalItemId').value = itemId;
+                        variantModal.show();
+                    }
+                });
+            });
+
+            // Add subtle interactive effects
+            const cards = document.querySelectorAll('.item-card');
+            cards.forEach(card => {
+                card.addEventListener('click', function (e) {
+                    // Ignore if clicking on buttons directly
+                    if (!e.target.closest('.btn')) {
+                        this.style.transform = 'scale(0.99)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                    }
+                });
+            });
+
+            // Add animation to the "Add Item" button
+            const addButton = document.querySelector('.add-item-btn');
+            if (addButton) {
+                setTimeout(() => {
+                    addButton.style.transform = 'translateY(-5px)';
+                    addButton.style.boxShadow = '0 6px 14px rgba(76, 201, 240, 0.4)';
+
+                    setTimeout(() => {
+                        addButton.style.transform = '';
+                        addButton.style.boxShadow = '';
+                    }, 150);
+                }, 500);
+            }
+        });
+    </script>
+</body>
+
+</html>
