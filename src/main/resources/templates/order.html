@@ -71,6 +71,25 @@
 			</div>
 		</div>
 
+		<!-- Variant Selection Modal -->
+		<div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="variantModalLabel">Select Variant</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="variantModalBody">
+				<!-- JS will inject variant buttons here -->
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-success" id="addVariantBtn">Add to Order</button>
+			</div>
+			</div>
+		</div>
+		</div>
+
 		<!-- Hidden form for submission -->
 		<form id="order-form" method="post" th:action="@{/order/confirm}">
 			<input type="hidden" name="itemIds" id="itemIds" />

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class MenuItemDto {
     private Long id;
     private String name;
+
     // optional convenience fields for backward compatibility
     private Double basePrice;     // optional, e.g. first/default variant price
     private Double upsizePrice;   // optional: price of an "Upsize" variant if exists

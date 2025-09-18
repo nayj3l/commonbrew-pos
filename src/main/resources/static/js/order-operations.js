@@ -1,28 +1,78 @@
-// Add item to order
+let selectedVariant = null; // temporary holder for selected variant
+let selectedItemName = "";   // for display in modal
+
 function addToOrder(button) {
     const itemId = button.getAttribute("data-item-id");
-    const itemName = button.textContent;
-    const itemPrice = parseFloat(button.getAttribute("data-item-price"));
-    const quantity = 1;
+    selectedItemName = button.textContent;
+
+    // fetch variants from backend
+    fetch(`/order/items/${itemId}/variants`)
+        .then(res => res.json())
+        .then(variants => {
+            if (!variants || variants.length === 0) {
+                alert("No variants available for this item!");
+                return;
+            }
+
+            const modalBody = document.getElementById("variantModalBody");
+            modalBody.innerHTML = "";
+
+            variants.forEach(variant => {
+                const btn = document.createElement("button");
+                btn.className = "btn btn-outline-primary m-1";
+                btn.textContent = `${variant.variantName} - ₱${variant.price.toFixed(2)}`;
+                btn.onclick = () => {
+                    selectedVariant = variant;
+                    // highlight selected
+                    modalBody.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                };
+                modalBody.appendChild(btn);
+            });
+
+            // show modal
+            const modal = new bootstrap.Modal(document.getElementById("variantModal"));
+            modal.show();
+        })
+        .catch(err => console.error(err));
+}
+
+// Hook "Add to Order" in modal
+document.getElementById("addVariantBtn").addEventListener("click", () => {
+    if (!selectedVariant) {
+        alert("Please select a variant!");
+        return;
+    }
+
+    const quantity = parseInt("1");
 
     const existingItemIndex = currentOrder.items.findIndex(
-        (item) => item.itemId === itemId
+        item => item.itemId == selectedVariant.variantId
     );
 
     if (existingItemIndex >= 0) {
-        currentOrder.items[existingItemIndex].quantity += 1;
+        currentOrder.items[existingItemIndex].quantity += quantity;
     } else {
         currentOrder.items.push({
-            itemId,
-            itemName,
-            itemPrice,
-            quantity,
+            itemId: selectedVariant.variantId,
+            itemName: `${selectedItemName} (${selectedVariant.variantName})`,
+            itemPrice: selectedVariant.price,
+            quantity
         });
     }
 
     calculateTotal();
     renderOrder();
-}
+
+    // hide modal
+    const modalEl = document.getElementById("variantModal");
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+
+    selectedVariant = null;
+    selectedItemName = "";
+});
+
 
 // Update addons in order
 function updateAddons() {

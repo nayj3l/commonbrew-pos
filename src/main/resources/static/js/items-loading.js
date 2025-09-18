@@ -1,6 +1,6 @@
 // Load menu items for a category
-function loadItems(categoryId) {
-    fetch("/order/items/" + categoryId)
+function loadItems(menuId) {
+    fetch("/order/items/" + menuId)
         .then((response) => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
@@ -23,8 +23,8 @@ function loadItems(categoryId) {
 
                 const btn = document.createElement("button");
                 btn.className = "btn btn-outline-success item-btn";
-                btn.textContent = item.itemName;
-                btn.dataset.itemId = item.itemId;
+                btn.textContent = item.name;
+                btn.dataset.itemId = item.id;
                 btn.dataset.itemPrice = item.basePrice;
                 btn.onclick = function() {
                     addToOrder(this);

@@ -20,11 +20,12 @@ import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
+import com.commonbrew.pos.model.dto.ItemVariantDto;
 import com.commonbrew.pos.model.dto.MenuItemDto;
 import com.commonbrew.pos.model.dto.OrderSummary;
 import com.commonbrew.pos.service.AddonService;
-import com.commonbrew.pos.service.MenuService;
 import com.commonbrew.pos.service.MenuItemService;
+import com.commonbrew.pos.service.MenuService;
 import com.commonbrew.pos.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,27 @@ public class OrderController {
         model.addAttribute("addons", addons);
 
         return "order";
+    }
+
+    @GetMapping("/items/{itemId}/variants")
+    @ResponseBody
+    public List<ItemVariantDto> getVariantsByMenuItem(@PathVariable Long itemId) {
+        MenuItem item = itemService.getItemById(itemId);
+
+        return item.getVariants().stream()
+            .map(v -> new ItemVariantDto(v.getVariantId(), v.getVariantName(), v.getPrice()))
+            .collect(Collectors.toList());
+    }
+
+    @GetMapping("/items/{menuId}")
+    @ResponseBody
+    public List<MenuItemDto> getItemsByCategory(@PathVariable Long menuId) {
+        List<MenuItem> items = itemService.getMenuItemsByMenuId(menuId);
+        return items.stream()
+                .map(item -> new MenuItemDto(
+                        item.getId(),
+                        item.getName()))
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/preview")
@@ -200,17 +222,6 @@ public class OrderController {
     public String showOrderHistory(Model model) {
         model.addAttribute("orders", orderService.getAllOrders());
         return "order-history";
-    }
-
-    @GetMapping("/items/{categoryId}")
-    @ResponseBody
-    public List<MenuItemDto> getItemsByCategory(@PathVariable Long menuId) {
-        List<MenuItem> items = itemService.getMenuItemsByMenuId(menuId);
-        return items.stream()
-                .map(item -> new MenuItemDto(
-                        item.getId(),
-                        item.getName()))
-                .collect(Collectors.toList());
     }
 
 }
