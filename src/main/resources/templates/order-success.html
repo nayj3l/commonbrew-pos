@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Success</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            padding: 16px;
+            color: var(--dark);
+            font-size: 16px;
+            line-height: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .success-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .success-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .success-title {
+            font-weight: 700;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .success-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .success-body {
+            padding: 25px 20px;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .success-icon i {
+            font-size: 50px;
+            color: var(--success);
+            animation: scaleUp 0.5s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes scaleUp {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .order-number {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+            padding: 12px 20px;
+            background-color: rgba(67, 97, 238, 0.1);
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        .total-amount {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 20px 0;
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #f0f7ff, #e1efff);
+            border-radius: var(--border-radius);
+        }
+
+        .success-message {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 0 10px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            border-radius: 12px;
+            padding: 16px 25px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 54px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: var(--gray);
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+                align-items: flex-start;
+                padding-top: 40px;
+            }
+            
+            .success-container {
+                width: 100%;
+            }
+            
+            .success-header {
+                padding: 20px 16px;
+            }
+            
+            .success-title {
+                font-size: 22px;
+            }
+            
+            .success-body {
+                padding: 20px 16px;
+            }
+            
+            .success-message {
+                font-size: 15px;
+                margin-bottom: 25px;
+            }
+            
+            .order-number {
+                font-size: 16px;
+                padding: 10px 16px;
+            }
+            
+            .total-amount {
+                font-size: 18px;
+                margin-bottom: 20px;
+                padding: 14px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 15px;
+                min-height: 50px;
+            }
+            
+            .success-icon {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .success-icon i {
+                font-size: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .success-title {
+                font-size: 20px;
+            }
+            
+            .success-header {
+                padding: 18px 14px;
+            }
+            
+            .success-body {
+                padding: 18px 14px;
+            }
+            
+            .btn {
+                padding: 14px 16px;
+                font-size: 15px;
+                min-height: 48px;
+            }
+            
+            .button-container {
+                gap: 12px;
+            }
+            
+            .success-message {
+                font-size: 14px;
+                padding: 0 5px;
+            }
+            
+            .total-amount {
+                font-size: 17px;
+            }
+        }
+
+        /* Touch device improvements */
+        @media (hover: none) {
+            .btn:hover {
+                transform: none;
+            }
+            
+            .btn:active {
+                transform: scale(0.98);
+            }
+            
+            .btn-primary:active {
+                background: linear-gradient(to right, var(--primary), var(--primary-light));
+            }
+            
+            .btn-secondary:active {
+                background: #f1f3f5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-header">
+            <h1 class="success-title">Order Placed Successfully!</h1>
+            <p class="success-subtitle">Thank you for your order</p>
+        </div>
+        
+        <div class="success-body">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <div class="order-number">Order #<span th:text="${orderId}"></span></div>
+            <div class="total-amount">Total: ₱<span th:text="${totalAmount}"></span></div>
+            <p class="success-message">We're preparing your order with care and it will be ready soon!</p>
+            
+            <div class="button-container">
+                <a th:href="@{/order}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i>Back to Order Page
+                </a>
+                <a th:href="@{/}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i>Go to Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -3,9 +3,13 @@ package com.commonbrew.pos.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.commonbrew.pos.constants.PaymentOption;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +32,14 @@ public class Order {
     private LocalDateTime orderTime;
     
     private Double totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentOption paymentOption;
+
+    private String unpaidReason;
+
+    private String barista;
 
     @OneToMany(mappedBy="order", cascade=CascadeType.ALL)
     private List<OrderItem> items;

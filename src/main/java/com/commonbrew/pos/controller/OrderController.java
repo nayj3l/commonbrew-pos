@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.commonbrew.pos.constants.PaymentOption;
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
@@ -109,29 +112,30 @@ public class OrderController {
     // Final order submission (redirect to success page)
     @PostMapping("/submit")
     public String submitOrder(
-            @RequestParam("itemIds") List<Long> itemIds,
-            @RequestParam("quantities") List<Integer> quantities,
-            @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
-            @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
-            @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
-            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
+            @RequestParam("variantId") List<Long> variantIds,
+            @RequestParam("quantity") List<Integer> quantities,
+            @RequestParam("paymentMethod") String paymentMethod,
+            @RequestParam(value = "unpaidReason", required = false) String unpaidReason,
             RedirectAttributes redirectAttributes) {
 
-        if (itemIds == null || quantities == null || itemIds.size() != quantities.size()) {
-            throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
+        if (variantIds == null || quantities == null || variantIds.size() != quantities.size()) {
+            throw new IllegalArgumentException("variantIds and quantities are required and must have the same length");
         }
 
-        List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String barista = authentication.getName();
+
+        // List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
+
+        PaymentOption paymentOption = PaymentOption.valueOf(paymentMethod.toUpperCase());
 
         Order savedOrder = orderService.createOrder(
-                itemIds,           // menuItemIds
+                variantIds,
                 quantities,
-                variantIds,         // optional
-                itemAddonIds,       // per-item addon lists
-                orderAddonIds,      // order-level addons
-                addonQuantities     // order-level addon quantities
+                paymentOption,
+                unpaidReason,
+                barista
         );
-
         redirectAttributes.addAttribute("orderId", savedOrder.getId());
         redirectAttributes.addAttribute("totalAmount", savedOrder.getTotalAmount());
 
@@ -149,7 +153,7 @@ public class OrderController {
 
         model.addAttribute("orderId", order.getId());
         model.addAttribute("totalAmount", order.getTotalAmount());
-        return "success";
+        return "order-success";
     }
 
     /**
@@ -180,11 +184,7 @@ public class OrderController {
                 
         log.info("Received itemIds: {}", itemsVariantsIds);
         log.info("Received quantities: {}", quantities);
-        // log.info("Received variantIds: {}", variantIds);
-        // log.info("Received addonIds: {}", orderAddonIds);
-        // log.info("Received addonQuantities: {}", addonQuantities);
 
-        // Basic validation
         if (itemsVariantsIds == null || quantities == null || itemsVariantsIds.size() != quantities.size()) {
             throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
         }

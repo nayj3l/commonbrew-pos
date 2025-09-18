@@ -217,6 +217,13 @@
             color: var(--gray);
             border: 2px solid #e2e8f0;
         }
+
+        .payment-name.btn-secondary {
+            font-size: 13px;
+            color: black;
+            border: unset !important;
+            background: transparent !important;
+        }
         
         .btn-secondary:hover {
             background: #f8f9fa;
@@ -393,6 +400,203 @@
                 min-height: 44px;
             }
         }
+
+        /* QR Modal */
+        .modal-content {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            height: 85vh;
+            max-height: 700px;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-bottom: none;
+            padding: 20px;
+            position: relative;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .modal-body {
+            padding: 0;
+            height: calc(100% - 70px);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .qr-viewer {
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-slide {
+            display: none;
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .qr-slide.active {
+            display: flex;
+        }
+        
+        .qr-img {
+            max-width: 100%;
+            max-height: 70%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+        
+        .qr-caption {
+            font-weight: 600;
+            color: var(--dark);
+            margin-top: 20px;
+            font-size: 18px;
+            padding: 0 15px;
+        }
+        
+        .nav-arrows {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            pointer-events: auto;
+            transition: var(--transition);
+        }
+        
+        .nav-arrow:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+        
+        .slide-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .indicator.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 10px;
+                max-width: 100%;
+            }
+            
+            .modal-content {
+                height: 90vh;
+            }
+            
+            .modal-header {
+                padding: 16px;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+            }
+            
+            .qr-caption {
+                font-size: 16px;
+            }
+            
+            .nav-arrow {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .btn-trigger {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                height: 95vh;
+            }
+            
+            .modal-title {
+                font-size: 17px;
+            }
+            
+            .qr-caption {
+                font-size: 15px;
+                margin-top: 15px;
+            }
+            
+            .qr-slide {
+                padding: 15px;
+            }
+            
+            .nav-arrow {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+            
+            .slide-indicators {
+                bottom: 15px;
+            }
+        }
+        
+        /* Touch improvements */
+        .qr-viewer {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: pan-y;
+        }
     </style>
 </head>
 <body>
@@ -454,7 +658,9 @@
                             <div class="payment-icon">
                                 <i class="fas fa-credit-card"></i>
                             </div>
-                            <div class="payment-name">Online</div>
+                            <button type="button" class="payment-name btn-secondary" data-bs-toggle="modal" data-bs-target="#qrModal">
+                               Online
+                            </button>
                         </div>
                         <div class="payment-method" data-method="unpaid">
                             <div class="payment-icon">
@@ -471,10 +677,10 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#qrModal">
+                    <!-- <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#qrModal">
                         <i class="fas fa-qrcode"></i>
                         Show QR Codes
-                    </button>
+                    </button> -->
                     <a class="btn btn-secondary" href="/order">
                         <i class="fas fa-edit"></i>
                         Cancel/Edit
@@ -498,7 +704,7 @@
         </div>
     </div>
 
-    <!-- QR Modal -->
+     <!-- QR Modal -->
     <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -507,38 +713,59 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="qr-container">
-                        <img th:src="@{/qr-img-1.jpeg}" class="qr-img" alt="QR Code 1" />
-                        <div class="qr-caption">Scan to pay with GCash</div>
-                    </div>
-                    <div class="qr-container">
-                        <img th:src="@{/qr-img-2.jpeg}" class="qr-img" alt="QR Code 2" />
-                        <div class="qr-caption">Scan to pay with Maya</div>
+                    <div class="qr-viewer">
+                        <!-- QR Slide 1 -->
+                        <div class="qr-slide active">
+                            <img th:src="@{/qr-img-1.jpeg}" class="qr-img" alt="QR Code 1" />
+                            <div class="qr-caption">Scan to pay with GCash</div>
+                        </div>
+                        
+                        <!-- QR Slide 2 -->
+                        <div class="qr-slide">
+                            <img th:src="@{/qr-img-2.jpeg}" class="qr-img" alt="QR Code 2" />
+                            <div class="qr-caption">Scan to pay with Maya</div>
+                        </div>
+                        
+                        <!-- Navigation Arrows -->
+                        <div class="nav-arrows">
+                            <div class="nav-arrow prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </div>
+                            <div class="nav-arrow next">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Slide Indicators -->
+                        <div class="slide-indicators">
+                            <div class="indicator active" data-slide="0"></div>
+                            <div class="indicator" data-slide="1"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap & jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const paymentMethods = document.querySelectorAll('.payment-method');
-            const unpaidReasonSection = document.getElementById('unpaidReason');
+            const confirmOrderBtn = document.getElementById('confirmOrderBtn');
             const paymentMethodInput = document.getElementById('paymentMethodInput');
             const unpaidReasonInput = document.getElementById('unpaidReasonInput');
-            const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+            const unpaidReasonSection = document.getElementById('unpaidReason');
+
+            const paymentMethods = document.querySelectorAll('.payment-method');
             const orderForm = document.getElementById('orderForm');
             
             // Payment method selection
             paymentMethods.forEach(method => {
                 method.addEventListener('click', function() {
-                    // Remove selected class from all methods
                     paymentMethods.forEach(m => m.classList.remove('selected'));
                     
-                    // Add selected class to clicked method
                     this.classList.add('selected');
                     
                     // Get selected method
@@ -548,10 +775,6 @@
                     // Show/hide unpaid reason input
                     if (selectedMethod === 'unpaid') {
                         unpaidReasonSection.style.display = 'block';
-                        // Focus on the reason input for better UX
-                        setTimeout(() => {
-                            unpaidReasonInput.focus();
-                        }, 100);
                     } else {
                         unpaidReasonSection.style.display = 'none';
                         unpaidReasonInput.value = '';
@@ -559,20 +782,12 @@
                 });
             });
             
-            // Confirm order button
             confirmOrderBtn.addEventListener('click', function() {
-                if (!paymentMethodInput.value) {
-                    alert('Please select a payment method');
-                    return;
+                // Set unpaid reason value if applicable
+                if (paymentMethodInput.value === 'unpaid') {
+                    unpaidReasonInput.value = document.getElementById('reasonInput').value;
                 }
-                
-                if (paymentMethodInput.value === 'unpaid' && !unpaidReasonInput.value) {
-                    alert('Please provide a reason for unpaid order');
-                    unpaidReasonInput.focus();
-                    return;
-                }
-                
-                // Submit the form
+                        
                 orderForm.submit();
             });
             
@@ -592,15 +807,87 @@
                     });
                 });
             }
+
+            const cashOption = document.querySelector('.payment-method[data-method="cash"]');
+            if (cashOption) {
+                cashOption.click(); // triggers the same logic as manual click
+            }
         });
 
-        
-      document.addEventListener("DOMContentLoaded", function() {
-          const cashOption = document.querySelector('.payment-method[data-method="cash"]');
-          if (cashOption) {
-              cashOption.click(); // triggers the same logic as manual click
-          }
-      });
+        $(document).ready(function() {
+            let currentSlide = 0;
+            const slides = $('.qr-slide');
+            const indicators = $('.indicator');
+            const totalSlides = slides.length;
+            
+            // Update slide function
+            function updateSlide() {
+                slides.removeClass('active');
+                $(slides[currentSlide]).addClass('active');
+                
+                indicators.removeClass('active');
+                $(indicators[currentSlide]).addClass('active');
+            }
+            
+            // Next slide
+            $('.nav-arrow.next').on('click', function() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlide();
+            });
+            
+            // Previous slide
+            $('.nav-arrow.prev').on('click', function() {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                updateSlide();
+            });
+            
+            // Click on indicator
+            indicators.on('click', function() {
+                currentSlide = $(this).data('slide');
+                updateSlide();
+            });
+            
+            // Swipe handling
+            const qrViewer = $('.qr-viewer')[0];
+            let startX = 0;
+            let endX = 0;
+            
+            qrViewer.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+            });
+            
+            qrViewer.addEventListener('touchend', function(e) {
+                endX = e.changedTouches[0].clientX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const threshold = 100; // Minimum swipe distance
+                
+                if (startX - endX > threshold) {
+                    // Swipe left - next slide
+                    currentSlide = (currentSlide + 1) % totalSlides;
+                    updateSlide();
+                } else if (endX - startX > threshold) {
+                    // Swipe right - previous slide
+                    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                    updateSlide();
+                }
+            }
+            
+            // Keyboard navigation
+            $(document).on('keydown', function(e) {
+                if ($('#qrModal').hasClass('show')) {
+                    if (e.key === 'ArrowLeft') {
+                        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                        updateSlide();
+                    } else if (e.key === 'ArrowRight') {
+                        currentSlide = (currentSlide + 1) % totalSlides;
+                        updateSlide();
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
