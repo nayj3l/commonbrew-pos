@@ -1,5 +1,6 @@
 package com.commonbrew.pos.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,7 @@ import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.OrderItem;
 import com.commonbrew.pos.model.OrderItemAddon;
-import com.commonbrew.pos.model.dto.OrderItemDto;
-import com.commonbrew.pos.model.dto.OrderSummary;
+import com.commonbrew.pos.model.dto.OrderConfirmSummary;
 import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.ItemVariantRepository;
 import com.commonbrew.pos.repository.MenuItemRepository;
@@ -141,81 +141,35 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    // Build summary (similar idea): accept variantIds optional, fallback to first variant
-    public OrderSummary buildOrderSummary(
-            List<Long> menuItemIds,
-            List<Integer> quantities,
-            List<Long> variantIds,
-            List<List<Long>> itemAddonIds,
-            List<Long> orderAddonIds,
-            List<Integer> orderAddonQuantities) {
+    public List<OrderConfirmSummary> buildOrderSummary(
+            List<Integer> itemsVariantsIds,
+            List<Integer> quantities
+    ) {
+        List<OrderConfirmSummary> summaries = new ArrayList<>();
 
-        OrderSummary summary = new OrderSummary();
-        List<OrderItemDto> items = new ArrayList<>();
-        List<OrderItemDto> addons = new ArrayList<>();
-        double total = 0.0;
+        for (int i = 0; i < itemsVariantsIds.size(); i++) {
+            Long variantId = Long.valueOf(itemsVariantsIds.get(i));
+            int quantity = quantities.get(i);
 
-        if (menuItemIds != null && quantities != null) {
-            for (int i = 0; i < menuItemIds.size(); i++) {
-                Long menuItemId = menuItemIds.get(i);
-                int qty = quantities.get(i);
+            ItemVariant itemVariant = variantRepository.getReferenceById(variantId);
+            MenuItem menuItem = itemVariant.getMenuItem();
 
-                ItemVariant variant = null;
-                if (variantIds != null && variantIds.size() > i && variantIds.get(i) != null) {
-                    variant = variantRepository.findById(variantIds.get(i)).orElse(null);
-                } else {
-                    MenuItem mi = menuItemRepository.findById(menuItemId).orElse(null);
-                    if (mi != null && mi.getVariants() != null && !mi.getVariants().isEmpty()) {
-                        variant = mi.getVariants().get(0);
-                    }
-                }
+            BigDecimal unitPrice = new BigDecimal(itemVariant.getPrice());
+            BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
 
-                if (variant != null) {
-                    double price = variant.getPrice() * qty;
-                    total += price;
-                    items.add(new OrderItemDto(variant.getVariantName(), qty, price));
-                }
-                // item-level addons summary
-                if (itemAddonIds != null && itemAddonIds.size() > i && itemAddonIds.get(i) != null) {
-                    for (Long aid : itemAddonIds.get(i)) {
-                        Addon a = addonRepository.findById(aid).orElse(null);
-                        if (a != null) {
-                            double ap = a.getPrice() * 1 * qty; // multiply by qty of item if addon follows each item
-                            total += ap;
-                            addons.add(new OrderItemDto(a.getAddonName(), qty, ap));
-                        }
-                    }
-                }
-            }
+            OrderConfirmSummary summary = OrderConfirmSummary.builder()
+                    .variantId(variantId.intValue())
+                    .itemName(menuItem.getName())    
+                    .variantName(itemVariant.getVariantName())
+                    .quantity(quantity)
+                    .price(unitPrice)
+                    .totalPrice(lineTotal)
+                    .build();
+
+            summaries.add(summary);
         }
 
-        // order-level addons
-        if (orderAddonIds != null) {
-            for (int j = 0; j < orderAddonIds.size(); j++) {
-                Long addonId = orderAddonIds.get(j);
-                int aq = (orderAddonQuantities != null && orderAddonQuantities.size() > j) ? orderAddonQuantities.get(j) : 1;
-                Addon a = addonRepository.findById(addonId).orElse(null);
-                if (a != null) {
-                    double ap = a.getPrice() * aq;
-                    total += ap;
-                    addons.add(new OrderItemDto(a.getAddonName(), aq, ap));
-                }
-            }
-        }
-
-        summary.setItems(items);
-        summary.setAddons(addons);
-        summary.setTotal(total);
-
-        // keep references for reuse like before (convenience)
-        summary.setItemIds(menuItemIds);
-        summary.setQuantities(quantities);
-        // flattening itemAddonIds is out-of-scope for this DTO; keep old fields for compatibility:
-        summary.setAddonIds(orderAddonIds);
-        // For addon quantities we store order-level only:
-        summary.setAddonQuantities(orderAddonQuantities);
-
-        return summary;
+        return summaries;
     }
 
     @Transactional(readOnly = true)

@@ -43,21 +43,30 @@
           <table class="table table-striped text-start">
             <thead>
               <tr>
-                <th>Item</th>
+                <th>Item Name</th>
+                <th>Variant</th>
                 <th class="text-center">Qty</th>
                 <th class="text-end">Price</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr th:each="item : ${orderSummary.items}">
-                <td th:text="${item.name}"></td>
+              <!-- Items -->
+              <tr th:each="item : ${orderConfirmSummary.items}">
+                <td th:text="${item.itemName}"></td>
+                <td th:text="${item.variantName}"></td>
                 <td class="text-center" th:text="${item.quantity}"></td>
                 <td class="text-end" th:text="'₱' + ${item.price}"></td>
+                <td class="text-end" th:text="'₱' + ${item.totalPrice}"></td>
               </tr>
-              <tr th:each="addon : ${orderSummary.addons}">
-                <td th:text="${addon.name}"></td>
+
+              <!-- Add-ons -->
+              <tr th:each="addon : ${orderConfirmSummary.addons}">
+                <td th:text="${addon.itemName}"></td>
+                <td th:text="${addon.addonName}"></td>
                 <td class="text-center" th:text="${addon.quantity}"></td>
                 <td class="text-end" th:text="'₱' + ${addon.price}"></td>
+                <td class="text-end" th:text="'₱' + ${addon.totalPrice}"></td>
               </tr>
             </tbody>
           </table>
@@ -65,20 +74,20 @@
           <h4 class="mt-3">
             Total:
             <span class="fw-bold text-success"
-              >₱<span th:text="${orderSummary.total}"></span
+              >₱<span th:text="${orderConfirmSummary.total}"></span
             ></span>
           </h4>
 
         <form method="post" th:action="@{/order/submit}" class="mt-4">
-            <div th:each="itemId, iterStat : ${orderSummary.itemIds}">
-                <input type="hidden" name="itemIds" th:value="${itemId}" />
-                <input type="hidden" name="quantities" th:value="${orderSummary.quantities[__${iterStat.index}__]}" />
+            <div th:each="item, iterStat : ${orderConfirmSummary.items}">
+                <input type="hidden" name="variantId" th:value="${item.variantId}" />
+                <input type="hidden" name="quantity" th:value="${item.quantity}" />
             </div>
 
-            <div th:each="addonId, iterStat : ${orderSummary.addonIds}">
+            <!-- <div th:each="addonId, iterStat : ${orderConfirmSummary.addonIds}">
                 <input type="hidden" name="addonIds" th:value="${addonId}" />
-                <input type="hidden" name="addonQuantities" th:value="${orderSummary.addonQuantities[__${iterStat.index}__]}" />
-            </div>
+                <input type="hidden" name="addonQuantities" th:value="${orderConfirmSummary.addonQuantities[__${iterStat.index}__]}" />
+            </div> -->
 
             <button class="btn btn-success me-2" type="submit">Confirm Order</button>
             <a class="btn btn-secondary" href="/order">Cancel/Edit</a>

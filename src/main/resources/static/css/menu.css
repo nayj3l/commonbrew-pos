@@ -79,7 +79,7 @@
 
 /* Initially not collapsed */
 .categories-content {
-  max-height: 500px;
+  /* max-height: 500px; */
   opacity: 1;
 }
 

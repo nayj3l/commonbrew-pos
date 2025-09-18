@@ -94,7 +94,7 @@ function confirmOrder() {
 
 // Submit the confirmed order
 function submitConfirmedOrder() {
-    document.getElementById("itemIds").value = currentOrder.items
+    document.getElementById("itemsVariantsIds").value = currentOrder.items
         .map((i) => i.itemId)
         .join(",");
     document.getElementById("quantities").value = currentOrder.items

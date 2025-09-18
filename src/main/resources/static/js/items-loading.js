@@ -8,18 +8,17 @@ function loadItems(menuId) {
             return response.json();
         })
         .then((items) => {
-            const container = document.getElementById("items-container");
+            const container = document.getElementById("itemsModalBody");
             container.innerHTML = "";
 
-            if (items.length === 0) {
-                container.innerHTML =
-                    '<p class="text-center">No items available in this category</p>';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p class="text-center">No items available in this category</p>';
                 return;
             }
 
             items.forEach((item) => {
-                const itemItem = document.createElement("div");
-                itemItem.className = "item-item";
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "mb-2";
 
                 const btn = document.createElement("button");
                 btn.className = "btn btn-outline-success item-btn";
@@ -28,20 +27,20 @@ function loadItems(menuId) {
                 btn.dataset.itemPrice = item.basePrice;
                 btn.onclick = function() {
                     addToOrder(this);
+                    bootstrap.Modal.getInstance(document.getElementById("itemsModal")).hide();
                 };
 
-                const priceDiv = document.createElement("div");
-                priceDiv.className = "text-center mt-1";
-
-                itemItem.appendChild(btn);
-                itemItem.appendChild(priceDiv);
-                container.appendChild(itemItem);
+                itemDiv.appendChild(btn);
+                container.appendChild(itemDiv);
             });
+
+            // show modal
+            const modal = new bootstrap.Modal(document.getElementById("itemsModal"));
+            modal.show();
         })
         .catch((err) => {
             console.error("Error loading items:", err);
-            const container = document.getElementById("items-container");
-            container.innerHTML =
-                '<p class="text-center">Error loading items. Please try again.</p>';
+            document.getElementById("itemsModalBody").innerHTML =
+                '<p class="text-center text-danger">Error loading items. Please try again.</p>';
         });
 }

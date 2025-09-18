@@ -7,6 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class ItemVariantDto {
     private Long variantId;
+    private Long menuItemId;
     private String variantName;
     private Double price;
 }

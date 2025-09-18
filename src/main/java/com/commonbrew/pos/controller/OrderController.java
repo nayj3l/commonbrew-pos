@@ -1,5 +1,6 @@
 package com.commonbrew.pos.controller;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,19 +21,23 @@ import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
+import com.commonbrew.pos.model.dto.AddonConfirmSummary;
 import com.commonbrew.pos.model.dto.ItemVariantDto;
 import com.commonbrew.pos.model.dto.MenuItemDto;
-import com.commonbrew.pos.model.dto.OrderSummary;
+import com.commonbrew.pos.model.dto.OrderConfirmSummary;
+import com.commonbrew.pos.model.dto.OrderConfirmSummaryResponse;
 import com.commonbrew.pos.service.AddonService;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
 import com.commonbrew.pos.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/order")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
 
     private final MenuItemService itemService;
@@ -59,7 +64,7 @@ public class OrderController {
         MenuItem item = itemService.getItemById(itemId);
 
         return item.getVariants().stream()
-            .map(v -> new ItemVariantDto(v.getVariantId(), v.getVariantName(), v.getPrice()))
+            .map(v -> new ItemVariantDto(v.getVariantId(), v.getMenuItem().getId(), v.getVariantName(), v.getPrice()))
             .collect(Collectors.toList());
     }
 
@@ -76,7 +81,7 @@ public class OrderController {
 
     @PostMapping("/preview")
     @ResponseBody
-    public OrderSummary previewOrder(
+    public OrderConfirmSummary previewOrder(
             @RequestParam("itemIds") List<Long> itemIds,
             @RequestParam("quantities") List<Integer> quantities,
             @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
@@ -90,14 +95,15 @@ public class OrderController {
 
         List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
 
-        return orderService.buildOrderSummary(
-                itemIds,
-                quantities,
-                variantIds,
-                itemAddonIds,
-                orderAddonIds,
-                addonQuantities
-        );
+        // return orderService.buildOrderSummary(
+        //         itemIds,
+        //         quantities,
+        //         variantIds,
+        //         itemAddonIds,
+        //         orderAddonIds,
+        //         addonQuantities
+        // );
+        return null;
     }
 
     // Final order submission (redirect to success page)
@@ -146,40 +152,56 @@ public class OrderController {
         return "success";
     }
 
+    /**
+     * Handles order confirmation request.
+     *
+     * @param itemIds        IDs of the ordered items.
+     * @param quantities     Quantities corresponding to each item.
+     * @param variantIds     (Optional) Variant IDs for each line item. Can be null.
+     * @param itemAddonCsv   (Optional) Per-item addons as CSV strings. 
+     *                       Example: ["5,6", "", "3"] means:
+     *                       - first item has addons 5 and 6
+     *                       - second item has none
+     *                       - third item has addon 3
+     * @param orderAddonIds  (Optional) Addons applied at the order level.
+     * @param addonQuantities (Optional) Quantities for each order-level addon.
+     * @param model          Spring MVC model for passing attributes to the view.
+     * @return View name for the confirmation page.
+     */
     @PostMapping("/confirm")
     public String confirmOrder(
-            @RequestParam("itemIds") List<Long> itemIds,
+            @RequestParam("itemsVariantsIds") List<Integer> itemsVariantsIds,
             @RequestParam("quantities") List<Integer> quantities,
-            // optional: preferred to pass explicit variant IDs for each line (can be null)
-            @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
-            // optional: per-item addons as CSV strings (one CSV string per line item).
-            // e.g. itemAddonCsv = ["5,6", "", "3"] => first item has addons 5 and 6, second none, third addon 3
-            @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
-            // order-level addons (old behavior)
-            @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
-            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
+            // @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
+            // @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
+            // @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
+            // @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
             Model model) {
+                
+        log.info("Received itemIds: {}", itemsVariantsIds);
+        log.info("Received quantities: {}", quantities);
+        // log.info("Received variantIds: {}", variantIds);
+        // log.info("Received addonIds: {}", orderAddonIds);
+        // log.info("Received addonQuantities: {}", addonQuantities);
 
-        // Basic validation: make sure required lists align
-        if (itemIds == null || quantities == null || itemIds.size() != quantities.size()) {
+        // Basic validation
+        if (itemsVariantsIds == null || quantities == null || itemsVariantsIds.size() != quantities.size()) {
             throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
         }
 
         // Parse per-item addon CSVs into List<List<Long>>
-        List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
+        // List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemsVariantsIds.size());
 
-        // Call the updated service method (menuItemIds == itemIds)
-        OrderSummary orderSummary = orderService.buildOrderSummary(
-                itemIds,                 // menuItemIds
-                quantities,
-                variantIds,               // may be null
-                itemAddonIds,             // per-item addons parsed
-                orderAddonIds,            // order-level addons
-                addonQuantities           // order-level addon quantities
-        );
+        List<OrderConfirmSummary> items = orderService.buildOrderSummary(itemsVariantsIds, quantities);
+        List<AddonConfirmSummary> addons = List.of(new AddonConfirmSummary());
 
-        model.addAttribute("orderSummary", orderSummary);
-        return "order-receipt";
+        BigDecimal total = items.stream()
+            .map(OrderConfirmSummary::getTotalPrice)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .add(BigDecimal.ZERO); // zero in the meantime
+
+        model.addAttribute("orderConfirmSummary", new OrderConfirmSummaryResponse(items, addons, total));
+        return "order-confirm";
     }
 
     /**

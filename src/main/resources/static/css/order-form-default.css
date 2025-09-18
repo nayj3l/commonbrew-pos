@@ -15,3 +15,7 @@
   margin-right: 10px;
   transition: transform 0.3s ease;
 }
+
+.mb-2 {
+	padding: auto;
+}

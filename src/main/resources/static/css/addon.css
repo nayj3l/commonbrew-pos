@@ -19,11 +19,6 @@
 	transition: all 0.2s ease;
 }
 
-.mb-2 {
-	padding: auto;
-	margin-bottom: 0 !important;
-}
-
 .form-check {
 	padding-left: 0 !important;
     display: flex;
@@ -43,7 +38,7 @@
 		grid-template-columns: 1fr;
 	}
 
-	.container {
+	/* .container {
 		padding: 20px;
-	}
+	} */
 }
