@@ -1,43 +1,52 @@
-let selectedVariant = null; // temporary holder for selected variant
-let selectedItemName = "";   // for display in modal
+let selectedVariant = null; 
+let selectedItemName = "";
 
 function addToOrder(button) {
     const itemId = button.getAttribute("data-item-id");
     selectedItemName = button.textContent;
 
-    // fetch variants from backend
+    const modalBody = document.getElementById("variantModalBody");
+    const addToOrderBtn = document.getElementById("addVariantBtn");
+
+    modalBody.innerHTML = "<p class='text-center text-muted'>Loading variants...</p>";
+    addToOrderBtn.style.display = "flex"; // show footer by default
+
+    const modal = new bootstrap.Modal(document.getElementById("variantModal"));
+    modal.show();
+
     fetch(`/order/items/${itemId}/variants`)
         .then(res => res.json())
         .then(variants => {
+            modalBody.innerHTML = ""; // clear loading message
+
             if (!variants || variants.length === 0) {
-                alert("No variants available for this item!");
+                // no variants available
+                modalBody.innerHTML = "<p class='text-center'>No variants available for this item.</p>";
+                selectedVariant = null; 
+                addToOrderBtn.style.display = "none";
                 return;
             }
 
-            const modalBody = document.getElementById("variantModalBody");
-            modalBody.innerHTML = "";
-
+            // Display variant buttons
             variants.forEach(variant => {
                 const btn = document.createElement("button");
                 btn.className = "btn btn-outline-primary m-1";
                 btn.textContent = `${variant.variantName} - ₱${variant.price.toFixed(2)}`;
                 btn.onclick = () => {
                     selectedVariant = variant;
-                    // highlight selected
                     modalBody.querySelectorAll("button").forEach(b => b.classList.remove("active"));
                     btn.classList.add("active");
                 };
                 modalBody.appendChild(btn);
             });
-
-            // show modal
-            const modal = new bootstrap.Modal(document.getElementById("variantModal"));
-            modal.show();
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            modalBody.innerHTML = "<p class='text-center text-danger'>Error loading variants. Please try again.</p>";
+        });
 }
 
-// Hook "Add to Order" in modal
+// Add selected variant to order
 document.getElementById("addVariantBtn").addEventListener("click", () => {
     if (!selectedVariant) {
         alert("Please select a variant!");
@@ -64,15 +73,12 @@ document.getElementById("addVariantBtn").addEventListener("click", () => {
     calculateTotal();
     renderOrder();
 
-    // hide modal
     const modalEl = document.getElementById("variantModal");
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    modal.hide();
+    bootstrap.Modal.getInstance(modalEl).hide();
 
     selectedVariant = null;
     selectedItemName = "";
 });
-
 
 // Update addons in order
 function updateAddons() {
