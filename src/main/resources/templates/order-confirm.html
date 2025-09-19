@@ -690,23 +690,13 @@
                     </button>
                 </div>
                 
-                <form method="post" th:action="@{/order/confirm}" id="orderForm">
+                <form method="post" th:action="@{/order/submit}" id="orderForm">
                     <input type="hidden" name="paymentMethod" id="paymentMethodInput">
                     <input type="hidden" name="unpaidReason" id="unpaidReasonInput">
-
-                    <!-- Items -->
-                    <div th:each="item : ${orderConfirmSummary.items}">
-                        <input type="hidden" name="itemsVariantsIds" th:value="${item.variantId}" />
-                        <input type="hidden" name="quantities" th:value="${item.quantity}" />
-                    </div>
-
-                    <!-- Addons -->
-                    <div th:each="addon : ${orderConfirmSummary.addons}">
-                        <input type="hidden" name="addonIds" th:value="${addon.addonId}" />
-                        <input type="hidden" name="addonQuantities" t
-                        h:value="${addon.quantity}" />
-                        <input type="hidden" name="addonItemIds" th:value="${addon.addonItemIds}" />
-                        <!-- if your controller expects itemId instead of itemName, use addon.getParentItemId() -->
+                    
+                    <div th:each="item, iterStat : ${orderConfirmSummary.items}">
+                        <input type="hidden" name="variantId" th:value="${item.variantId}" />
+                        <input type="hidden" name="quantity" th:value="${item.quantity}" />
                     </div>
                 </form>
             </div>
@@ -882,22 +872,22 @@
                     currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
                     updateSlide();
                 }
-            }
 
-            function updateAddonsForForm() {
-                const addonItemIds = [];
-                const addonIds = [];
-                const addonQuantities = [];
+            // function updateAddonsForForm() {
+            //     const addonItemIds = [];
+            //     const addonIds = [];
+            //     const addonQuantities = [];
                 
-                selectedAddons.forEach(a => {
-                    addonItemIds.push(a.itemId);
-                    addonIds.push(a.addonId);
-                    addonQuantities.push(a.quantity);
-                });
+            //     selectedAddons.forEach(a => {
+            //         addonItemIds.push(a.itemId);
+            //         addonIds.push(a.addonId);
+            //         addonQuantities.push(a.quantity);
+            //     });
 
-                document.getElementById('addonItemIds').value = addonItemIds.join(',');
-                document.getElementById('addonIds').value = addonIds.join(',');
-                document.getElementById('addonQuantities').value = addonQuantities.join(',');
+            //     document.getElementById('addonItemIds').value = addonItemIds.join(',');
+            //     document.getElementById('addonIds').value = addonIds.join(',');
+            //     document.getElementById('addonQuantities').value = addonQuantities.join(',');
+            // }
             }
             
             // Keyboard navigation
