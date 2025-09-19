@@ -46,40 +46,6 @@ function addToOrder(button) {
         });
 }
 
-// Add selected variant to order
-document.getElementById("addVariantBtn").addEventListener("click", () => {
-    if (!selectedVariant) {
-        alert("Please select a variant!");
-        return;
-    }
-
-    const quantity = parseInt("1");
-
-    const existingItemIndex = currentOrder.items.findIndex(
-        item => item.itemId == selectedVariant.variantId
-    );
-
-    if (existingItemIndex >= 0) {
-        currentOrder.items[existingItemIndex].quantity += quantity;
-    } else {
-        currentOrder.items.push({
-            itemId: selectedVariant.variantId,
-            itemName: `${selectedItemName} (${selectedVariant.variantName})`,
-            itemPrice: selectedVariant.price,
-            quantity
-        });
-    }
-
-    calculateTotal();
-    // renderOrder();
-
-    // Auto close
-    const modalEl = document.getElementById("variantModal");
-    bootstrap.Modal.getInstance(modalEl).hide();
-
-    selectedVariant = null;
-    selectedItemName = "";
-});
 
 // Update addons in order
 function updateAddons() {

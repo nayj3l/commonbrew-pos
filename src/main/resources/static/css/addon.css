@@ -33,6 +33,12 @@
 	margin-left: 10px !important;
 }
 
+.addon-card label,
+.addon-card span,
+.addon-card small {
+    pointer-events: none;
+}
+
 @media (max-width: 768px) {
 	.addons-container {
 		grid-template-columns: 1fr;
