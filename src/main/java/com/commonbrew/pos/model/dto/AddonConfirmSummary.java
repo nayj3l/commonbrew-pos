@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AddonConfirmSummary {
     private String itemName;
+    private Long parentItemId;
     private Long addonId;
     private String addonName;
     private Integer quantity;

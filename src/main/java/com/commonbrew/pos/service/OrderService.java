@@ -10,11 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.commonbrew.pos.constants.PaymentOption;
+import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.ItemVariant;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.OrderItem;
 import com.commonbrew.pos.model.dto.OrderConfirmSummary;
+import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.ItemVariantRepository;
 import com.commonbrew.pos.repository.OrderRepository;
 
@@ -26,6 +28,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ItemVariantRepository variantRepository;
+    private final AddonRepository addonRepository;
 
     @Transactional
     public Order createOrder(List<Long> variantIds, List<Integer> quantities, 
@@ -106,4 +109,10 @@ public class OrderService {
     public Optional<Order> findById(Long id) {
         return orderRepository.findById(id);
     }
+
+    public Addon getAddonById(Long addonId) {
+    return addonRepository.findById(addonId)
+        .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
+}
+
 }

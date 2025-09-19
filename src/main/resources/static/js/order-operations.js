@@ -141,8 +141,11 @@ function decrementItem(itemId) {
 }
 
 // Increment addon quantity
-function incrementAddon(addonId) {
-    const addon = currentOrder.addons.find((a) => a.addonId == addonId);
+function incrementAddon(itemId, addonId) {
+    const item = currentOrder.items.find(i => i.itemId == itemId);
+    if (!item || !item.addons) return;
+
+    const addon = item.addons.find(a => a.addonId == addonId);
     if (addon) {
         addon.quantity += 1;
         calculateTotal();
@@ -151,23 +154,25 @@ function incrementAddon(addonId) {
 }
 
 // Decrement addon quantity
-function decrementAddon(addonId) {
-    const index = currentOrder.addons.findIndex(
-        (a) => a.addonId == addonId
-    );
-    if (index >= 0) {
-        const addon = currentOrder.addons[index];
+function decrementAddon(itemId, addonId) {
+    const item = currentOrder.items.find(i => i.itemId == itemId);
+    if (!item || !item.addons) return;
+
+    const addonIndex = item.addons.findIndex(a => a.addonId == addonId);
+    if (addonIndex >= 0) {
+        const addon = item.addons[addonIndex];
         if (addon.quantity > 1) {
             addon.quantity -= 1;
         } else {
-            currentOrder.addons.splice(index, 1);
-            const checkbox = document.getElementById("addon-" + addonId);
-            if (checkbox) checkbox.checked = false;
+            // Remove only the addon, not the item
+            item.addons.splice(addonIndex, 1);
         }
+        // IMPORTANT: do NOT remove the item just because addons is empty
         calculateTotal();
         renderModalOrder();
     }
 }
+
 
 function renderOrderModal() {
     const panel = document.getElementById("modal-order-summary");

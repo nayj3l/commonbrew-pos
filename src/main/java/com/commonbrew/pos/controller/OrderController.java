@@ -176,29 +176,53 @@ public class OrderController {
     public String confirmOrder(
             @RequestParam("itemsVariantsIds") List<Integer> itemsVariantsIds,
             @RequestParam("quantities") List<Integer> quantities,
-            // @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
-            // @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
-            // @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
-            // @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
+            @RequestParam(value = "addonItemIds", required = false) List<Integer> addonItemIds,
+            @RequestParam(value = "addonIds", required = false) List<Integer> addonIds,
+            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
             Model model) {
                 
         log.info("Received itemIds: {}", itemsVariantsIds);
         log.info("Received quantities: {}", quantities);
 
+        if (addonItemIds == null) {
+            addonItemIds = new ArrayList<>();
+        }
+        if (addonIds == null) {
+            addonIds = new ArrayList<>();
+        }
+        if (addonQuantities == null) {
+            addonQuantities = new ArrayList<>();
+        }
+
         if (itemsVariantsIds == null || quantities == null || itemsVariantsIds.size() != quantities.size()) {
             throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
         }
 
-        // Parse per-item addon CSVs into List<List<Long>>
-        // List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemsVariantsIds.size());
-
         List<OrderConfirmSummary> items = orderService.buildOrderSummary(itemsVariantsIds, quantities);
-        List<AddonConfirmSummary> addons = List.of(new AddonConfirmSummary());
+        List<AddonConfirmSummary> addons = new ArrayList<>();
+        if (addonIds != null) {
+            for (int i = 0; i < addonIds.size(); i++) {
+                int itemId = addonItemIds.get(i);
+                int addonId = addonIds.get(i);
+                int quantity = addonQuantities.get(i);
+
+                Addon addon = orderService.getAddonById(Long.valueOf(addonId));
+                addons.add(new AddonConfirmSummary(
+                    addon.getAddonName(),                  // Use addon name here
+                    (long) itemId,                         // parent item id is okay
+                    (long) addonId,
+                    "-",                                   // variant name placeholder
+                    quantity,
+                    BigDecimal.valueOf(addon.getPrice()),
+                    BigDecimal.valueOf(addon.getPrice() * quantity)
+                ));
+            }
+        }
 
         BigDecimal total = items.stream()
             .map(OrderConfirmSummary::getTotalPrice)
             .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .add(BigDecimal.ZERO); // zero in the meantime
+            .add(addons.stream().map(AddonConfirmSummary::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
 
         model.addAttribute("orderConfirmSummary", new OrderConfirmSummaryResponse(items, addons, total));
         return "order-confirm";
