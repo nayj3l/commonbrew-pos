@@ -55,6 +55,14 @@ public class MenuItemService {
     }
 
     public void deleteItem(Long id) {
-        itemRepository.deleteById(id);
+        MenuItem item = itemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid item ID: " + id));
+
+        item.setActive(false);
+        if (item.getVariants() != null) {
+            item.getVariants().forEach(v -> v.setActive(false));
+        }
+
+        itemRepository.save(item);
     }
 }

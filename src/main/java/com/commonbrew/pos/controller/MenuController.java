@@ -35,14 +35,13 @@ public class MenuController {
     @GetMapping("/add")
     public String showAddMenuForm(Model model) {
         model.addAttribute("menu", new Menu());
-        return "add-menu";
+        return "menu-add";
     }
 
-	// Handle form submission
 	@PostMapping("/add")
-	public String saveMenu(@ModelAttribute Menu menu) {
-		menuService.saveMenu(menu);
-		return "redirect:/menu"; // back to menu list
+	public String save(@ModelAttribute Menu menu) {
+		menuService.save(menu);
+		return "redirect:/menu";
 	}
 
     @GetMapping("/{id}")
@@ -53,6 +52,27 @@ public class MenuController {
         model.addAttribute("menu", menu);
         model.addAttribute("menuItems", menuItems);
         return "items";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editMenu(@PathVariable Long id, Model model) {
+        Menu menu = menuService.findById(id);
+        model.addAttribute("menu", menu);
+        return "menu-edit";
+    }
+
+    @PostMapping("/{id}/update")
+    public String updateMenu(@PathVariable Long id, @ModelAttribute Menu menuDetails) {
+        Menu menu = menuService.findById(id);
+        menu.setName(menuDetails.getName());
+        menuService.save(menu);
+        return "redirect:/menu";
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deleteMenu(@PathVariable Long id) {
+        menuService.softDelete(id);
+        return "redirect:/menu";
     }
 
     // Show form to add a new menu item
@@ -85,6 +105,7 @@ public class MenuController {
     @GetMapping("/{menuId}/item/delete/{itemId}")
     public String deleteItem(@PathVariable Long menuId, @PathVariable Long itemId) {
         itemService.deleteItem(itemId);
-        return "redirect:/menu/" + menuId;
+        return "redirect:/menu";
     }
+    
 }

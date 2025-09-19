@@ -140,12 +140,15 @@
             gap: 16px;
             margin-bottom: 30px;
         }
-        
+
         .menu-card {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
             background: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            padding: 25px 20px;
+            padding: 12px 20px;
             transition: var(--transition);
             text-decoration: none;
             color: var(--dark);
@@ -153,6 +156,20 @@
             align-items: center;
             justify-content: space-between;
             border: none;
+        }
+
+        .menu-card .edit-btn {
+            position: absolute;
+            top: 0px;
+            right: 0;
+            background: #f8f9fa;
+            border-radius: 0;  
+            height: 100%; 
+        }
+
+        .menu-card .edit-btn:hover {
+            color: white;
+            background: #0d6efd;;
         }
         
         .menu-card:hover {
@@ -308,7 +325,6 @@
 <div class="container">
     <div class="app-header">
         <div class="app-logo">CommonBrew POS</div>
-        <div class="app-subtitle">Menu Management</div>
     </div>
 
     <div class="header-card">
@@ -328,22 +344,28 @@
         </div>
     </div>
 
-    <!-- Menu Grid -->
-    <div class="menu-grid">
-        <a th:each="menu : ${menu}"
-           th:href="@{'/menu/' + ${menu.id}}"
-           class="menu-card">
-            <div class="menu-content">
-                <div class="menu-icon">
-                    <i class="fas fa-list"></i>
-                </div>
-                <h3 class="menu-name" th:text="${menu.name}">Menu Name</h3>
+<!-- Menu Grid -->
+<div class="menu-grid">
+    <div th:each="menu : ${menu}" 
+         class="list-group-item d-flex align-items-center menu-card justify-content-between"
+         th:attr="data-href=@{'/menu/' + ${menu.id}}"
+         onclick="handleCardClick(event, this)">
+        
+        <!-- Left: Menu content -->
+        <div class="menu-content d-flex align-items-center">
+            <div class="menu-icon">
+                <i class="fas fa-list"></i>
             </div>
-            <div class="menu-arrow">
-                <i class="fas fa-chevron-right"></i>
-            </div>
+            <h3 class="menu-name mb-0" th:text="${menu.name}">Menu Name</h3>
+        </div>
+
+        <!-- Right: Edit button -->
+        <a th:href="@{'/menu/' + ${menu.id} + '/edit'}" 
+           class="btn btn-sm btn-outline-primary edit-btn">
+            <i class="fas fa-edit"></i>
         </a>
     </div>
+</div>
 
     <!-- Empty state -->
     <div th:if="${#lists.isEmpty(menu)}" class="empty-state">
@@ -378,6 +400,19 @@
             });
         });
     });
+
+    
+    function handleCardClick(event, card) {
+        // Ignore clicks on Edit button
+        if (event.target.closest('.edit-btn')) {
+            return;
+        }
+        // Navigate to menu detail
+        const url = card.getAttribute('data-href');
+        if (url) {
+            window.location.href = url;
+        }
+    }
 </script>
 </body>
 </html>

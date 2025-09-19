@@ -22,12 +22,6 @@
             --transition: all 0.3s ease;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
@@ -101,7 +95,6 @@
         }
 
         .item-card:hover {
-            transform: translateY(-3px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
@@ -150,7 +143,6 @@
 
         .btn-primary:hover {
             background: linear-gradient(to right, var(--primary-light), var(--primary));
-            transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
             color: white;
         }
@@ -162,7 +154,6 @@
 
         .btn-danger:hover {
             background: linear-gradient(to right, #ff9e7d, #ff6b6b);
-            transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
             color: white;
         }
@@ -321,52 +312,6 @@
             color: var(--primary);
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Stagger animation for cards */
-        .item-card:nth-child(1) {
-            animation-delay: 0.1s;
-        }
-
-        .item-card:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .item-card:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-
-        .item-card:nth-child(4) {
-            animation-delay: 0.4s;
-        }
-
-        .item-card:nth-child(5) {
-            animation-delay: 0.5s;
-        }
-
         /* Responsive adjustments */
         @media (min-width: 576px) {
             .items-list {
@@ -433,7 +378,7 @@
                         <a th:href="@{'/menu/' + ${menu.id} + '/item/edit/' + ${item.id}}" class="btn btn-primary">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a th:href="@{'/menu/' + ${menu.id} + '/item/delete/' + ${item.id}}" class="btn btn-danger">
+                        <a th:href="@{'/menu/' + ${menu.id} + '/item/delete/' + ${item.id}}" class="btn btn-danger btn-item-delete">
                             <i class="fas fa-trash-alt"></i>
                         </a>
                     </div>
@@ -563,6 +508,21 @@
                     }, 150);
                 }, 500);
             }
+
+            // Select all delete buttons
+            const deleteButtons = document.querySelectorAll('.btn-item-delete');
+            
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault(); // stop immediate navigation
+                    const url = this.getAttribute('href');
+
+                    if (confirm("Are you sure you want to delete this item?")) {
+                        // proceed with deletion
+                        window.location.href = url;
+                    }
+                });
+            });
         });
     </script>
 </body>

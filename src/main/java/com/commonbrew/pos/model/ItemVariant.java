@@ -35,4 +35,8 @@ public class ItemVariant {
 
     // optional SKU/code or ordering weight
     private String code;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
 }

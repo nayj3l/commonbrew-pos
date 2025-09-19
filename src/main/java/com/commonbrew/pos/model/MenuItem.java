@@ -20,8 +20,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -50,6 +48,9 @@ public class MenuItem {
     // Variants (Regular, Upsize, Slice, 4-inch, etc.)
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVariant> variants;
+
+    @Column
+    private boolean active = true;
 
     // Auditing fields
     @CreatedDate
