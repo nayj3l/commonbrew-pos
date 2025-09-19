@@ -35,7 +35,7 @@ public class AddonController {
     public String showAddAddonForm(Model model) {
         model.addAttribute("addon", new Addon());
         model.addAttribute("allMenus", menuService.getAllMenu());
-        return "addon-form";
+        return "save-addon-form";
     }
 
     @PostMapping("/add")
@@ -50,7 +50,16 @@ public class AddonController {
         Addon addon = addonService.getAddonById(id);
         model.addAttribute("addon", addon);
         model.addAttribute("allMenus", menuService.getAllMenu());
-        return "addon-form";
+        return "save-addon-form";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String updateAddon(@PathVariable Long id,
+                            @ModelAttribute Addon addon,
+                            @RequestParam(required = false) List<Long> menuIds) {
+        addon.setAddonId(id);
+        addonService.saveAddon(addon, menuIds);
+        return "redirect:/addon";
     }
 
     @GetMapping("/delete/{id}")

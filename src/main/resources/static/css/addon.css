@@ -19,18 +19,22 @@
 	transition: all 0.2s ease;
 }
 
-.form-check {
-	padding-left: 0 !important;
-    display: flex;
-    align-items: center;
-    height: 100%;
-    margin-left: 0;
-    justify-content: flex-start;
+.modal-body {
+    overflow-x: hidden; /* disable horizontal scroll */
+    overflow-y: auto;   /* allow vertical scroll if content exceeds */
+}
+
+.addon-card  {  
+	display: flex;
+  	flex-direction: row;
+  	justify-content: flex-start;
+	align-items: center;
+	overflow: hidden;
 }
 
 .form-check .form-check-input {
 	float: left;
-	margin-left: 10px !important;
+	margin: 10px !important;
 }
 
 .addon-card label,
@@ -39,12 +43,34 @@
     pointer-events: none;
 }
 
+.form-check.p-2 {
+	padding: 0 !important;
+}
+
+.mx-auto {
+	/* margin-right: unset !important; */
+  	/* margin-left: unset !important; */
+}
+
+.form-check-input {  
+  	appearance: auto;
+}
+
+.addon-card > label.mt-2 {
+	background: var(--light);
+	text-align: left;
+	margin-top: 0 !important;
+	flex: 1;  
+	padding-left: 9px;
+}
+
+input {
+	font-size: large;
+}
+
 @media (max-width: 768px) {
 	.addons-container {
 		grid-template-columns: 1fr;
 	}
 
-	/* .container {
-		padding: 20px;
-	} */
 }

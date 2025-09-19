@@ -35,6 +35,7 @@ public class AddonService {
         }
         addonRepository.save(addon);
     }
+
     public void deleteAddon(Long id) {
         addonRepository.deleteById(id);
     }

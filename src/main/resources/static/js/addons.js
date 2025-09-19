@@ -13,10 +13,10 @@ function updateSelectedAddons() {
 }
 
 function addVariantWithAddons() {
-    if (!selectedVariant) {
-        alert("Please select a variant!");
-        return;
-    }
+    // if (!selectedVariant) {
+    //     alert("Please select a variant!");
+    //     return;
+    // }
 
     const quantity = 1;
     const selectedAddons = updateSelectedAddons();
