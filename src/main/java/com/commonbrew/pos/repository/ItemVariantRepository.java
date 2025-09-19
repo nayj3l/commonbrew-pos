@@ -30,4 +30,5 @@ public interface ItemVariantRepository extends JpaRepository<ItemVariant, Long> 
      * Batch lookup by variant ids.
      */
     List<ItemVariant> findByVariantIdIn(List<Long> variantIds);
+
 }

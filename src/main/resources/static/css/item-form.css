@@ -136,7 +136,7 @@
 }
 
 #variantModalBody .btn {
-    padding: 16px;
+    padding: 6px;
     font-weight: 600;
     cursor: pointer;
     gap: 8px;
@@ -231,3 +231,110 @@
 .modal-content {
     animation: fadeIn 0.3s ease-out;
 } */
+
+/* Variant Selection Modal - Mobile Theme */
+#variantModal .modal-content {
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+#variantModal .modal-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-bottom: none;
+    padding: 20px 25px;
+    text-align: center;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+#variantModal .modal-title {
+    font-weight: 700;
+    font-size: 20px;
+}
+
+#variantModal .modal-body {
+    padding: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Variant buttons injected via JS */
+#variantModalBody .btn {
+    flex: 1 1 45%;
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.quantity-controls .btn {
+    padding: 0 !important;
+}
+
+#variantModalBody .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* Active / Selected Variant */
+#variantModalBody .btn.active {
+    background: linear-gradient(to right, var(--success), #3a86ff);
+    color: white;
+    box-shadow: 0 6px 16px rgba(76, 201, 240, 0.3);
+}
+
+/* Modal footer buttons */
+#variantModal .modal-footer {
+    border-top: none;
+    padding: 20px 25px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+#variantModal .btn-secondary {
+    background: white;
+    color: var(--gray);
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px 20px;
+}
+
+#variantModal .btn-secondary:hover {
+    background: #f8f9fa;
+}
+
+#variantModal .btn-success {
+    background: linear-gradient(to right, var(--success), #3a86ff);
+    color: white;
+    padding: 14px 20px;
+    font-weight: 700;
+    border-radius: 14px;
+}
+
+#variantModal .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(76, 201, 240, 0.3);
+}
+
+/* Responsive for small screens */
+@media (max-width: 576px) {
+    #variantModalBody .btn {
+        flex: 1 1 100%;
+    }
+
+    #variantModal .modal-footer {
+        flex-direction: column;
+    }
+
+    #variantModal .modal-footer .btn {
+        width: 100%;
+    }
+}

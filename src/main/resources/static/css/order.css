@@ -96,3 +96,93 @@
     /* --bs-btn-disabled-border-color:none; */
     /* --bs-gradient: none; */
 }
+
+.quantity-controls {
+    background-color: var(--bs-gray-200);
+}
+
+.ms-3 {
+    margin-left: 6px !important;
+}
+
+.quantity-controls .mx-2 {
+    margin: 3px !important;
+}
+
+/* Place Order Button - Big, touch-friendly */
+.order-container .btn-success {
+    padding: 14px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 14px;
+    background: linear-gradient(to right, var(--success), #3a86ff);
+    color: white;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+    transition: all 0.3s ease;
+}
+
+.order-container .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(76, 201, 240, 0.4);
+}
+
+/* Items Modal - Mobile Theme */
+#itemsModal .modal-content {
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+#itemsModal .modal-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-bottom: none;
+    padding: 20px 25px;
+    text-align: center;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+#itemsModal .modal-title {
+    font-weight: 700;
+    font-size: 20px;
+}
+
+/* Body: 2-column grid */
+#itemsModalBody {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 20px;
+}
+
+/* Individual item container */
+#itemsModalBody .mb-2 {
+    margin-bottom: 0 !important;
+}
+
+/* Item buttons */
+#itemsModalBody .btn {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    white-space: normal; /* wrap text if needed */
+}
+
+/* Hover / Active / Selected */
+#itemsModalBody .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+#itemsModalBody .btn.active {
+    background: linear-gradient(to right, var(--success), #3a86ff);
+    color: white;
+    box-shadow: 0 6px 16px rgba(76, 201, 240, 0.3);
+}

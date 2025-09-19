@@ -51,14 +51,6 @@ public class MenuItem {
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVariant> variants;
 
-   @ManyToMany
-    @JoinTable(
-        name = "menu_item_addon",
-        joinColumns = @JoinColumn(name = "menu_item_id"),
-        inverseJoinColumns = @JoinColumn(name = "addon_id")
-    )
-    private List<Addon> allowedAddons;
-
     // Auditing fields
     @CreatedDate
     @Column(updatable = false)

@@ -1,5 +1,7 @@
 package com.commonbrew.pos.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,9 +9,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.service.AddonService;
+import com.commonbrew.pos.service.MenuService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class AddonController {
 
     private final AddonService addonService;
+    private final MenuService menuService;
 
     @GetMapping
     public String showAddons(Model model) {
@@ -29,12 +34,14 @@ public class AddonController {
     @GetMapping("/add")
     public String showAddAddonForm(Model model) {
         model.addAttribute("addon", new Addon());
+        model.addAttribute("allMenus", menuService.getAllMenu());
         return "addon-form";
     }
 
     @PostMapping("/add")
-    public String addAddon(@ModelAttribute Addon addon) {
-        addonService.saveAddon(addon);
+    public String saveAddon(@ModelAttribute Addon addon, 
+            @RequestParam(required = false) List<Long> menuIds) {
+        addonService.saveAddon(addon, menuIds);
         return "redirect:/addon";
     }
 
@@ -42,6 +49,7 @@ public class AddonController {
     public String showEditAddonForm(@PathVariable Long id, Model model) {
         Addon addon = addonService.getAddonById(id);
         model.addAttribute("addon", addon);
+        model.addAttribute("allMenus", menuService.getAllMenu());
         return "addon-form";
     }
 

@@ -1,29 +1,119 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Add Addon</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${addon.addonId != null} ? 'Edit Addon' : 'Add New Addon'">Addon Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .form-icon {
+            font-size: 2.5rem;
+            color: #6c5ce7;
+            margin-bottom: 1rem;
+        }
+        .price-input {
+            max-width: 200px;
+        }
+        .select2-container--bootstrap-5 .select2-selection--multiple {
+            min-height: 42px;
+            padding: 0 0.375rem;
+        }
+    </style>
+    <!-- Add Select2 CSS for better multi-select UI -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 </head>
-<body>
-<div class="container mt-5">
-    <h1 th:text="${addon.addonId} != null ? 'Edit Addon' : 'Add Addon'">Add/Edit Addon</h1>
-    
-    <form th:action="${addon.addonId} != null ? @{/addon/add} : @{/addon/add}" th:object="${addon}" method="post">
-        <input type="hidden" th:field="*{addonId}"/>
-        
-        <div class="mb-3">
-            <label class="form-label">Addon Name</label>
-            <input type="text" th:field="*{addonName}" class="form-control" required>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="form-container">
+            <!-- Header -->
+            <div class="form-header">
+                <i class="form-icon fas fa-plus-circle"></i>
+                <h2 th:text="${addon.addonId != null} ? 'Edit Addon' : 'Create New Addon'">Add New Addon</h2>
+                <p class="text-muted" th:text="${addon.addonId != null} ? 
+                    'Update your addon details' : 'Fill in the details to create a new addon'">
+                    Fill in the details to create a new addon
+                </p>
+            </div>
+
+            <!-- Addon Form -->
+            <form th:action="${addon.addonId != null} ? @{/addon/edit/{id}(id=${addon.addonId})} : @{/addon/add}" 
+                  th:object="${addon}" method="post">
+                
+                <!-- Hidden field for addonId -->
+                <input type="hidden" th:field="*{addonId}"/>
+                
+                <!-- Addon Name -->
+                <div class="mb-3">
+                    <label for="addonName" class="form-label">Addon Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="addonName" th:field="*{addonName}" 
+                           placeholder="e.g., Extra Cheese, Bacon, Avocado" required>
+                    <div class="form-text">Enter a descriptive name for your addon</div>
+                </div>
+                
+                <!-- Price -->
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
+                    <div class="input-group price-input">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="price" th:field="*{price}" 
+                               step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+                </div>
+                
+                <!-- Menu Selection - Multiple select -->
+                <div class="mb-4">
+                    <label for="menus" class="form-label">Assign to Menus</label>
+                    <select class="form-select" id="menus" name="menuIds" multiple="multiple" style="width: 100%">
+                        <option th:each="menu : ${allMenus}" 
+                                th:value="${menu.id}"
+                                th:text="${menu.name}"
+                                th:selected="${addon.menu != null} ? ${addon.menu.contains(menu)} : false">
+                        </option>
+                    </select>
+                    <div class="form-text">Select one or more menus this addon belongs to (use Ctrl/Cmd to select multiple)</div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a th:href="@{/addon}" class="btn btn-outline-secondary me-md-2">
+                        <i class="fas fa-arrow-left me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> 
+                        <span th:text="${addon.addonId != null} ? 'Update Addon' : 'Create Addon'">Create Addon</span>
+                    </button>
+                </div>
+            </form>
         </div>
-        
-        <div class="mb-3">
-            <label class="form-label">Price</label>
-            <input type="number" th:field="*{price}" class="form-control" step="0.01" min="0" required>
-        </div>
-        
-        <button type="submit" class="btn btn-success">Save</button>
-        <a href="/addon" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add Select2 JS for enhanced multi-select functionality -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for the multi-select dropdown
+            $('#menus').select2({
+                theme: 'bootstrap-5',
+                placeholder: '-- Select one or more menus --',
+                allowClear: true
+            });
+        });
+    </script>
 </body>
 </html>

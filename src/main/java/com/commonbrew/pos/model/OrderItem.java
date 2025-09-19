@@ -42,8 +42,8 @@ public class OrderItem {
 
     private Integer quantity;
 
-    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItemAddon> selectedAddons;
+    // @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<OrderItemAddon> selectedAddons;
 
     // subtotal for this order item (unit * qty + addons)
     private Double subtotal;

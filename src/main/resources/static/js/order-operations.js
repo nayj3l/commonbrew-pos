@@ -9,7 +9,7 @@ function addToOrder(button) {
     const addToOrderBtn = document.getElementById("addVariantBtn");
 
     modalBody.innerHTML = "<p class='text-center text-muted'>Loading variants...</p>";
-    addToOrderBtn.style.display = "flex"; // show footer by default
+    addToOrderBtn.style.display = "flex";
 
     const modal = new bootstrap.Modal(document.getElementById("variantModal"));
     modal.show();
@@ -71,8 +71,9 @@ document.getElementById("addVariantBtn").addEventListener("click", () => {
     }
 
     calculateTotal();
-    renderOrder();
+    // renderOrder();
 
+    // Auto close
     const modalEl = document.getElementById("variantModal");
     bootstrap.Modal.getInstance(modalEl).hide();
 
@@ -109,7 +110,7 @@ function updateAddons() {
         });
 
     calculateTotal();
-    renderOrder();
+    // renderOrder();
 }
 
 // Increment item quantity
@@ -118,7 +119,7 @@ function incrementItem(itemId) {
     if (item) {
         item.quantity += 1;
         calculateTotal();
-        renderOrder();
+        renderModalOrder();
     }
 }
 
@@ -135,7 +136,7 @@ function decrementItem(itemId) {
             currentOrder.items.splice(itemIndex, 1);
         }
         calculateTotal();
-        renderOrder();
+        renderModalOrder();
     }
 }
 
@@ -145,7 +146,7 @@ function incrementAddon(addonId) {
     if (addon) {
         addon.quantity += 1;
         calculateTotal();
-        renderOrder();
+        renderModalOrder();
     }
 }
 
@@ -164,6 +165,55 @@ function decrementAddon(addonId) {
             if (checkbox) checkbox.checked = false;
         }
         calculateTotal();
-        renderOrder();
+        renderModalOrder();
     }
 }
+
+function renderOrderModal() {
+    const panel = document.getElementById("modal-order-summary");
+    if (currentOrder.items.length === 0 && currentOrder.addons.length === 0) {
+        panel.innerHTML = '<p class="text-center text-muted">No items yet</p>';
+        document.getElementById("modal-order-total").textContent = "0.00";
+        return;
+    }
+
+    let html = "";
+
+    currentOrder.items.forEach((item) => {
+        html += `
+        <div class="order-item d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <button class="btn btn-sm btn-danger ms-2" onclick="decrementItem(${item.itemId}); renderOrderModal();">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <button class="btn btn-sm btn-success" onclick="incrementItem(${item.itemId}); renderOrderModal();">
+                    <i class="bi bi-plus"></i>
+                </button>
+                <span>${item.itemName} x<span id="item-qty-${item.itemId}">${item.quantity}</span></span>
+            </div>
+            <div>₱<span id="item-total-${item.itemId}">${(item.itemPrice * item.quantity).toFixed(2)}</span></div>
+        </div>
+        `;
+    });
+
+    currentOrder.addons.forEach((addon) => {
+        html += `
+        <div class="order-item d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <button class="btn btn-sm btn-danger ms-2" onclick="decrementAddon(${addon.addonId}); renderOrderModal();">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <button class="btn btn-sm btn-success" onclick="incrementAddon(${addon.addonId}); renderOrderModal();">
+                    <i class="bi bi-plus"></i>
+                </button>
+                <span>${addon.addonName} x<span id="addon-qty-${addon.addonId}">${addon.quantity}</span></span>
+            </div>
+            <div>₱<span id="addon-total-${addon.addonId}">${(addon.price * addon.quantity).toFixed(2)}</span></div>
+        </div>
+        `;
+    });
+
+    calculateTotal(); // recalc total
+    document.getElementById("modal-order-total").textContent = currentOrder.total.toFixed(2);
+}
+
