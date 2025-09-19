@@ -49,6 +49,22 @@ function addVariantWithAddons() {
 
     // auto-close modal
     bootstrap.Modal.getInstance(document.getElementById("variantModal")).hide();
+     
+    // Reset selections
     selectedVariant = null;
     selectedItemName = "";
+
+    // Reset addon checkboxes
+    document.querySelectorAll("#addonOptions input[type=checkbox]").forEach(cb => cb.checked = false);
+    updateSelectedAddons(); // clear selectedAddons array if you store it globally
 }
+
+document.querySelectorAll("#addonOptions > div").forEach(card => {
+    card.addEventListener("click", function(e) {
+        if (e.target.tagName === "INPUT") return;
+
+        const checkbox = card.querySelector("input[type=checkbox]");
+        checkbox.checked = !checkbox.checked;
+        updateSelectedAddons();
+    });
+});
