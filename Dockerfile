@@ -2,29 +2,33 @@
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml for dependency caching
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
-RUN ./mvnw dependency:go-offline
+# Make mvnw executable
+RUN chmod +x mvnw
 
-# Copy source code and build the JAR
+# copy source (includes src/main/resources/ca.pem)
 COPY src src
+
+# create truststore inside the build container (non-interactive)
+RUN keytool -import -trustcacerts -alias mysqlCA \
+    -file src/main/resources/ca.pem \
+    -keystore /app/truststore.jks -storepass changeit -noprompt
+
+RUN ./mvnw dependency:go-offline
 RUN ./mvnw clean package -DskipTests
 
-# Step 2: Create runtime image
+# Step 2: Runtime image
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy JAR from build stage
+# copy truststore & jar from build stage
+COPY --from=build /app/truststore.jks /app/truststore.jks
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (for local runs; Cloud Run injects $PORT)
 EXPOSE 8080
-
-# Cloud Run requires listening on $PORT
 ENV PORT=8080
 
-# Run the app
-CMD ["java", "-jar", "app.jar"]
+CMD ["java","-Djavax.net.ssl.trustStore=/app/truststore.jks","-Djavax.net.ssl.trustStorePassword=changeit","-jar","app.jar"]
