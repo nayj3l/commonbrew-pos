@@ -81,7 +81,7 @@
 }
 
 .btn-outline-success {
-    --bs-btn-hover-color:#2575fc;
+    /* --bs-btn-hover-color:#2575fc;
     --bs-btn-hover-bg:#2575fc;
     --bs-btn-hover-border-color:#2575fc;
     
@@ -89,7 +89,7 @@
 
     --bs-btn-active-color:white;
     --bs-btn-active-bg:#2575fc;
-    --bs-btn-active-border-color:#2575fc;
+    --bs-btn-active-border-color:#2575fc; */
     /* --bs-btn-active-shadow:none; */
     /* --bs-btn-disabled-color:none; */
     /* --bs-btn-disabled-bg:none; */
@@ -118,11 +118,11 @@
     background: linear-gradient(to right, var(--success), #3a86ff);
     color: white;
     box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-    transition: all 0.3s ease;
+    /* transition: all 0.3s ease; */
 }
 
 .order-container .btn-success:hover {
-    transform: translateY(-2px);
+    /* transform: translateY(-2px); */
     box-shadow: 0 6px 18px rgba(76, 201, 240, 0.4);
 }
 
@@ -170,14 +170,14 @@
     border-radius: 14px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.3s ease;
+    /* transition: all 0.3s ease; */
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
     white-space: normal; /* wrap text if needed */
 }
 
 /* Hover / Active / Selected */
 #itemsModalBody .btn:hover {
-    transform: translateY(-2px);
+    /* transform: translateY(-2px); */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
@@ -186,3 +186,115 @@
     color: white;
     box-shadow: 0 6px 16px rgba(76, 201, 240, 0.3);
 }
+/* Fullscreen modal for mobile */
+#itemsModal .modal-dialog {
+    max-width: 100%;
+    height: 100vh;
+    margin: 0;
+}
+
+#itemsModal .modal-content {
+    height: 100%;
+    border-radius: 12px; /* slight padding around modal */
+    margin: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal header: title only */
+#itemsModal .modal-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-bottom: none;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Modal body fills remaining space */
+#itemsModal .modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+}
+
+/* Sticky red Close button at the bottom */
+#itemsModal .modal-footer {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 10px 16px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+#itemsModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh; /* optional, limits modal height */
+}
+
+#itemsModal .modal-body {
+    overflow-y: auto;
+    flex-grow: 1; /* takes all remaining space */
+}
+
+#itemsModal .modal-footer .btn-close-bottom {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 14px;
+    background: #dc3545; /* Bootstrap red */
+    color: white;
+    border: none;
+}
+
+#itemsModal .modal-footer .btn-close-bottom:hover {
+    background: #c82333; /* darker red on hover */
+}
+
+/* Disable "rubber band" overscroll on the whole page */
+/* body, html {
+    overscroll-behavior: none; Prevent scroll chaining
+    touch-action: pan-y;       Only vertical scrolling allowed
+} */
+
+/* Make modal body scrollable, but prevent dragging the modal itself */
+/* .modal-content {
+           Disable dragging/scrolling on modal container
+    touch-action: none; 
+} */
+
+.modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    touch-action: pan-y;               /* Only vertical scroll inside modal body */
+}
+
+/* Make the modal content a flex container */
+#variantModal .modal-dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* fill available space */
+}
+
+#variantModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Make modal body take all available space and scrollable */
+#variantModal .modal-body {
+    flex: 1 1 auto; /* grow & shrink */
+    overflow-y: auto;
+}
+
+/* Footer stays at the bottom */
+#variantModal .modal-footer {
+    flex-shrink: 0; /* don’t shrink */
+}
+

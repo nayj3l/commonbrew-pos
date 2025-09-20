@@ -82,41 +82,29 @@ public class OrderController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping("/preview")
-    @ResponseBody
-    public OrderConfirmSummary previewOrder(
-            @RequestParam("itemIds") List<Long> itemIds,
-            @RequestParam("quantities") List<Integer> quantities,
-            @RequestParam(value = "variantIds", required = false) List<Long> variantIds,
-            @RequestParam(value = "itemAddonCsv", required = false) List<String> itemAddonCsv,
-            @RequestParam(value = "addonIds", required = false) List<Long> orderAddonIds,
-            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities) {
-
-        if (itemIds == null || quantities == null || itemIds.size() != quantities.size()) {
-            throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
-        }
-
-        List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
-
-        // return orderService.buildOrderSummary(
-        //         itemIds,
-        //         quantities,
-        //         variantIds,
-        //         itemAddonIds,
-        //         orderAddonIds,
-        //         addonQuantities
-        // );
-        return null;
-    }
-
     // Final order submission (redirect to success page)
     @PostMapping("/submit")
     public String submitOrder(
             @RequestParam("variantId") List<Long> variantIds,
             @RequestParam("quantity") List<Integer> quantities,
+            @RequestParam(value = "addonItemIds", required = false) List<Long> addonItemIds,
+            @RequestParam(value = "addonIds", required = false) List<Long> addonIds,
+            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
             @RequestParam("paymentMethod") String paymentMethod,
             @RequestParam(value = "unpaidReason", required = false) String unpaidReason,
             RedirectAttributes redirectAttributes) {
+
+    log.info("Received variantIds: {}", variantIds);
+    log.info("Received quantities: {}", quantities);
+    log.info("Received addonItemIds: {}", addonItemIds);
+    log.info("Received addonIds: {}", addonIds);
+    log.info("Received addonQuantities: {}", addonQuantities);
+    log.info("Payment method: {}", paymentMethod);
+    log.info("Unpaid reason: {}", unpaidReason);
+
+        if (addonItemIds == null) addonItemIds = new ArrayList<>();
+        if (addonIds == null) addonIds = new ArrayList<>();
+        if (addonQuantities == null) addonQuantities = new ArrayList<>();
 
         if (variantIds == null || quantities == null || variantIds.size() != quantities.size()) {
             throw new IllegalArgumentException("variantIds and quantities are required and must have the same length");
@@ -125,17 +113,24 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String barista = authentication.getName();
 
-        // List<List<Long>> itemAddonIds = parseItemAddonCsv(itemAddonCsv, itemIds.size());
-
         PaymentOption paymentOption = PaymentOption.valueOf(paymentMethod.toUpperCase());
+
+        List<List<Long>> addonIdsList = new ArrayList<>();
+        List<List<Integer>> addonQuantitiesList = new ArrayList<>();
+
+        addonIdsList.add(addonIds);
+        addonQuantitiesList.add(addonQuantities);
 
         Order savedOrder = orderService.createOrder(
                 variantIds,
                 quantities,
+                addonIdsList,
+                addonQuantitiesList,
                 paymentOption,
                 unpaidReason,
                 barista
         );
+
         redirectAttributes.addAttribute("orderId", savedOrder.getId());
         redirectAttributes.addAttribute("totalAmount", savedOrder.getTotalAmount());
 
@@ -156,22 +151,6 @@ public class OrderController {
         return "order-success";
     }
 
-    /**
-     * Handles order confirmation request.
-     *
-     * @param itemIds        IDs of the ordered items.
-     * @param quantities     Quantities corresponding to each item.
-     * @param variantIds     (Optional) Variant IDs for each line item. Can be null.
-     * @param itemAddonCsv   (Optional) Per-item addons as CSV strings. 
-     *                       Example: ["5,6", "", "3"] means:
-     *                       - first item has addons 5 and 6
-     *                       - second item has none
-     *                       - third item has addon 3
-     * @param orderAddonIds  (Optional) Addons applied at the order level.
-     * @param addonQuantities (Optional) Quantities for each order-level addon.
-     * @param model          Spring MVC model for passing attributes to the view.
-     * @return View name for the confirmation page.
-     */
     @PostMapping("/confirm")
     public String confirmOrder(
             @RequestParam("itemsVariantsIds") List<Integer> itemsVariantsIds,
@@ -211,7 +190,7 @@ public class OrderController {
                     addon.getAddonName(),                  // Use addon name here
                     (long) itemId,                         // parent item id is okay
                     (long) addonId,
-                    "-",                                   // variant name placeholder
+                    "Addon",                                   // variant name placeholder
                     quantity,
                     BigDecimal.valueOf(addon.getPrice()),
                     BigDecimal.valueOf(addon.getPrice() * quantity)
@@ -228,45 +207,13 @@ public class OrderController {
         return "order-confirm";
     }
 
-    /**
-     * Helper: convert list of CSV strings into List<List<Long>> with same size as itemsCount.
-     * If itemAddonCsv is null, returns a list of nulls to indicate "no per-item addons".
-     */
-    private List<List<Long>> parseItemAddonCsv(List<String> itemAddonCsv, int itemsCount) {
-        if (itemAddonCsv == null) {
-            // keep it null for the service (service accepts null)
-            return null;
-        }
-
-        List<List<Long>> parsed = new ArrayList<>(itemsCount);
-        for (int i = 0; i < itemsCount; i++) {
-            if (i < itemAddonCsv.size() && itemAddonCsv.get(i) != null && !itemAddonCsv.get(i).trim().isEmpty()) {
-                String csv = itemAddonCsv.get(i).trim();
-                String[] parts = csv.split(",");
-                List<Long> ids = new ArrayList<>();
-                for (String p : parts) {
-                    String s = p.trim();
-                    if (!s.isEmpty()) {
-                        try {
-                            ids.add(Long.parseLong(s));
-                        } catch (NumberFormatException ex) {
-                            // ignore invalid tokens (or throw if you prefer strict)
-                        }
-                    }
-                }
-                parsed.add(ids);
-            } else {
-                parsed.add(null); // no addons for this item
-            }
-        }
-        return parsed;
-    }
-
-
-    // Show past orders
     @GetMapping("/history")
     public String showOrderHistory(Model model) {
-        model.addAttribute("orders", orderService.getAllOrders());
+        List<Order> orders = orderService.getAllOrders()
+                                        .stream()
+                                        .sorted((o1, o2) -> o2.getOrderTime().compareTo(o1.getOrderTime()))
+                                        .toList(); // descending by orderTime
+        model.addAttribute("orders", orders);
         return "order-history";
     }
 

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${addon.addonId != null} ? 'Edit Addon' : 'Add New Addon'">Addon Form</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: #212529;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            border: none;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header i {
+            font-size: 28px;
+            color: var(--primary);
+            margin-right: 12px;
+        }
+
+        h2 {
+            font-weight: 700;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+        }
+
+        .input-group .form-control {
+            flex: 1;
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            box-shadow: 0 4px 8px rgba(67,97,238,0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 576px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <i class="fas fa-plus-circle"></i>
+                <h2 th:text="${addon.addonId != null} ? 'Edit Addon' : 'Add New Addon'">Add New Addon</h2>
+            </div>
+
+            <form th:action="${addon.addonId != null} ? @{/addon/edit/{id}(id=${addon.addonId})} : @{/addon/add}" 
+                  th:object="${addon}" method="post">
+
+                <input type="hidden" th:field="*{addonId}"/>
+
+                <!-- Addon Name -->
+                <div class="mb-3">
+                    <label class="form-label">Addon Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{addonName}" placeholder="e.g., Extra Cheese" required>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-3">
+                    <label class="form-label">Price <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">₱</span>
+                        <input type="number" class="form-control" th:field="*{price}" step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <!-- Menu Selection -->
+                <div class="mb-4">
+                    <label class="form-label">Assign to Menus</label>
+                    <select class="form-select" id="menus" name="menuIds" multiple="multiple" style="width: 100%">
+                        <option th:each="menu : ${allMenus}" 
+                                th:value="${menu.id}"
+                                th:text="${menu.name}"
+                                th:selected="${addon.menu != null} ? ${addon.menu.contains(menu)} : false">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary" th:text="${addon.addonId != null} ? 'Update Addon' : 'Create Addon'">
+                        Create Addon
+                    </button>
+                    <a th:href="@{/addon}" class="btn btn-secondary">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+
+        <p class="text-center text-muted mt-3">© 2025 CommonBrew Batasan Hills</p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#menus').select2({
+                theme: 'bootstrap-5',
+                placeholder: '-- Select menus --',
+                allowClear: true
+            });
+        });
+    </script>
+</body>
+</html>

@@ -40,34 +40,7 @@
             line-height: 1.6;
             /* padding-bottom: 80px; */
         }
-        
-        /* .container {
-            max-width: 100%;
-            padding: 16px;
-        } */
-        
-        /* .app-header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 16px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-         */
-        /* .app-logo {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 5px;
-        } */
-        
-        /* .app-subtitle {
-            color: var(--gray);
-            font-size: 14px;
-            font-weight: 500;
-        } */
-        
+ 
         /* Menu Section */
         .section-title {
             font-weight: 700;
@@ -86,7 +59,7 @@
         
         .toggle-icon {
             font-size: 16px;
-            transition: var(--transition);
+            /* transition: var(--transition); */
             /* color: var(--primary); */
         }
         
@@ -96,7 +69,7 @@
         
         .categories-content {
             margin-top: 12px;
-            transition: var(--transition);
+            /* transition: var(--transition); */
         }
         
         .categories-content.collapsed {
@@ -117,7 +90,7 @@
             padding: 16px 12px;
             text-align: center;
             cursor: pointer;
-            transition: var(--transition);
+            /* transition: var(--transition); */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -127,12 +100,12 @@
             color: var(--dark);
         }
         
-        .category-btn:hover {
+        .category-btn:active  {
             border-color: var(--primary-light);
-            transform: translateY(-3px);
+            /* transform: translateY(-3px); */
             box-shadow: 0 8px 16px rgba(67, 97, 238, 0.15);
         }
-        
+          
         .category-btn.selected {
             background: linear-gradient(135deg, #f0f7ff, #e1efff);
             border-color: var(--primary);
@@ -343,25 +316,48 @@
     }
 }
 
+    .category-btn, .btn {
+        will-change: transform;
+        backface-visibility: hidden;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+    .category-btn, .btn {
+        transition: none !important;
+        box-shadow: none !important;
+    }
+
+    .scrollable-container {
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+    touch-action: pan-y; /* Allow vertical scroll gestures only */
+}
+
+}
 
     </style>
 </head>
 
 <body>
-    
-    <!-- Page Header -->
-<div class="app-header d-flex justify-content-center align-items-center p-3 mb-4 shadow-sm rounded" style="background: white;">
-    <a href="/" class="btn btn-outline-primary d-flex align-items-center justify-content-center">
-        <i class="bi bi-house-door-fill me-2"></i> Home Page
+<!-- Page Header -->
+<div class="app-header d-flex justify-content-between align-items-center p-3 mb-4 shadow-sm rounded bg-white flex-wrap">
+    <!-- Left: Dashboard -->
+    <a href="/" class="btn btn-primary d-flex align-items-center gap-2 mb-2 mb-md-0 px-4 py-2">
+        <i class="bi bi-house-fill"></i>
+        Dashboard
+    </a>
+
+    <a href="/order/history" class="btn btn-outline-primary d-flex align-items-center gap-2 mb-2 mb-md-0 px-4 py-2">
+        <i class="bi bi-card-list"></i>
+        See All Orders
     </a>
 </div>
 
 
-	<div class="order container mt-3">
+<!-- Order Section -->
+<div class="order container mt-4">
+    <div class="card p-4 shadow-sm rounded">
+        <h1 class="text-center mb-4 fw-bold">Place Order</h1>
         
-		<h1 class="text-center mb-4">Place Order</h1>
-		<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-
 		<!-- Menu Section -->
 		<div class="section-title" onclick="toggleCategories()">
 			<span>Menu Categories</span>
@@ -475,20 +471,31 @@
         <input type="hidden" name="addonVariants" id="addonVariants" />
 	</form>
 
-	<!-- Items Modal -->
-	<div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered modal-lg" id="items-container">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="itemsModalLabel">Select Flavor</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body" id="itemsModalBody">
-					<!-- JS will inject items here -->
-				</div>
-			</div>
-		</div>
-	</div>
+    <!-- Items Modal -->
+    <div class="modal " id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" id="items-container">
+            <div class="modal-content">
+                
+                <!-- Modal Header (title only) -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemsModalLabel">Select Flavor</h5>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body" id="itemsModalBody">
+                    <!-- JS will inject items here -->
+                </div>
+
+                <!-- Modal Footer (close button) -->
+                <div class="modal-footer">
+                    <button type="button" class="btn-close-bottom" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 	
 	<script th:src="@{/js/order-state.js}"></script>
 	<script th:src="@{/js/categories.js}"></script>

@@ -698,6 +698,12 @@
                         <input type="hidden" name="variantId" th:value="${item.variantId}" />
                         <input type="hidden" name="quantity" th:value="${item.quantity}" />
                     </div>
+
+                    <div th:each="addon : ${orderConfirmSummary.addons}">
+                        <input type="hidden" name="addonItemIds" th:value="${addon.parentItemId}" />
+                        <input type="hidden" name="addonIds" th:value="${addon.addonId}" />
+                        <input type="hidden" name="addonQuantities" th:value="${addon.quantity}" />
+                    </div>
                 </form>
             </div>
         </div>

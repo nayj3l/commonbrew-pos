@@ -33,6 +33,9 @@ public class OrderItem {
     @JoinColumn(name = "variant_id", nullable = false)
     private ItemVariant variant;
 
+    @Column(nullable = false)
+    private String menuItemNameSnapshot;
+
     // snapshot values to preserve history
     @Column(nullable = false)
     private String variantNameSnapshot;

@@ -31,8 +31,15 @@ public class OrderService {
     private final AddonRepository addonRepository;
 
     @Transactional
-    public Order createOrder(List<Long> variantIds, List<Integer> quantities, 
-                           PaymentOption paymentOption, String unpaidReason, String barista) {
+    public Order createOrder(
+            List<Long> variantIds,
+            List<Integer> quantities,
+            List<List<Long>> addonIdsList,          // optional: list of addon IDs per variant
+            List<List<Integer>> addonQuantitiesList,// optional: quantities of addons per variant
+            PaymentOption paymentOption,
+            String unpaidReason,
+            String barista) {
+
         // Create new order
         Order order = new Order();
         order.setOrderTime(LocalDateTime.now());
@@ -40,7 +47,6 @@ public class OrderService {
         order.setUnpaidReason(paymentOption == PaymentOption.UNPAID ? unpaidReason : null);
         order.setBarista(barista);
 
-        // Calculate total amount and create order items
         double totalAmount = 0;
         List<OrderItem> orderItems = new ArrayList<>();
 
@@ -48,20 +54,50 @@ public class OrderService {
             Long variantId = variantIds.get(i);
             Integer quantity = quantities.get(i);
 
+            // Get variant
             ItemVariant variant = variantRepository.findById(variantId)
                     .orElseThrow(() -> new RuntimeException("Variant not found: " + variantId));
 
-            // Create order item
+            // Create main order item (the chosen variant)
             OrderItem orderItem = new OrderItem();
             orderItem.setVariant(variant);
             orderItem.setQuantity(quantity);
             orderItem.setVariantNameSnapshot(variant.getVariantName());
             orderItem.setUnitPriceSnapshot(variant.getPrice());
+            orderItem.setMenuItemNameSnapshot(variant.getMenuItem().getName());
             orderItem.setSubtotal(variant.getPrice() * quantity);
             orderItem.setOrder(order);
-
             orderItems.add(orderItem);
+
             totalAmount += orderItem.getSubtotal();
+
+            // Handle optional addons for this variant
+            // Handle optional addons for this variant
+if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != null) {
+    List<Long> addonIds = addonIdsList.get(i);
+    List<Integer> addonQuantities = addonQuantitiesList.get(i);
+
+    for (int j = 0; j < addonIds.size(); j++) {
+        Long addonId = addonIds.get(j);
+        Integer addonQty = addonQuantities.get(j);
+
+        Addon addon = addonRepository.findById(addonId)
+                .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
+
+        OrderItem addonItem = new OrderItem();
+        addonItem.setVariant(variant);
+        addonItem.setQuantity(addonQty);
+        addonItem.setVariantNameSnapshot(addon.getAddonName());
+        addonItem.setUnitPriceSnapshot(addon.getPrice());
+        addonItem.setMenuItemNameSnapshot(addon.getAddonName() + " (Addon)");
+        addonItem.setSubtotal(addon.getPrice() * addonQty);
+        addonItem.setOrder(order);
+
+        orderItems.add(addonItem);
+        totalAmount += addonItem.getSubtotal();
+    }
+}
+
         }
 
         order.setTotalAmount(totalAmount);
@@ -69,6 +105,7 @@ public class OrderService {
 
         return orderRepository.save(order);
     }
+
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();

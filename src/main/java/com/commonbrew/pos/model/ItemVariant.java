@@ -40,3 +40,4 @@ public class ItemVariant {
     private boolean active = true;
 
 }
+
