@@ -189,14 +189,12 @@
             <div class="order-total">Total: ₱<span th:text="${order.totalAmount}"></span></div>
             <div>Payment: <span th:text="${order.paymentOption}"></span></div>
         </div>
-
          <div class="order-details">
             <ul>
                 <li th:each="item : ${order.items}">
-                    <span th:text="${item.variant.menuItem.name}"></span> -
-                    <span th:text="${item.variant.variantName}"></span> ×
-                    <span th:text="${item.quantity}"></span> =
-                    ₱<span th:text="${item.subtotal}"></span>
+                    <span th:text="${item.menuItemNameSnapshot + (item.variantNameSnapshot != null ? ' (' + item.variantNameSnapshot + ')' : '')}">Item</span>
+                    × <span th:text="${item.quantity}">1</span>
+                    = ₱<span th:text="${item.subtotal}">0.0</span>
                 </li>
             </ul>
         </div>

@@ -187,10 +187,10 @@ public class OrderController {
 
                 Addon addon = orderService.getAddonById(Long.valueOf(addonId));
                 addons.add(new AddonConfirmSummary(
-                    addon.getAddonName(),                  // Use addon name here
-                    (long) itemId,                         // parent item id is okay
+                    addon.getAddonName(),
+                    (long) itemId,
                     (long) addonId,
-                    "Addon",                                   // variant name placeholder
+                    "Addon",
                     quantity,
                     BigDecimal.valueOf(addon.getPrice()),
                     BigDecimal.valueOf(addon.getPrice() * quantity)

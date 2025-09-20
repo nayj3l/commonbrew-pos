@@ -89,7 +89,7 @@ if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != nu
         addonItem.setQuantity(addonQty);
         addonItem.setVariantNameSnapshot(addon.getAddonName());
         addonItem.setUnitPriceSnapshot(addon.getPrice());
-        addonItem.setMenuItemNameSnapshot(addon.getAddonName() + " (Addon)");
+        addonItem.setMenuItemNameSnapshot("Addon");
         addonItem.setSubtotal(addon.getPrice() * addonQty);
         addonItem.setOrder(order);
 
