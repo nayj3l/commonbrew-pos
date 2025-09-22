@@ -2,6 +2,8 @@ package com.commonbrew.pos.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.commonbrew.pos.model.Menu;
@@ -15,16 +17,19 @@ public class MenuService {
 
     private final MenuRepository menuRepository;
 
+    @Cacheable("menus")
     public List<Menu> getAllMenu() {
         return menuRepository.findByActiveTrue();
     }
 
+    @Cacheable(value = "menu", key = "#id")
     public Menu getMenuById(Long id) {
         return menuRepository.findById(id)
-                .filter(Menu::isActive) // prevent access to deleted
+                .filter(Menu::isActive)
                 .orElseThrow(() -> new RuntimeException("Menu not found with id " + id));
     }
 
+    @CacheEvict(value = {"menus", "menu"}, allEntries = true)
     public Menu save(Menu menu) {
         if (menu.getCode() == null || menu.getCode().isBlank()) {
             String baseCode = menu.getName().trim().toLowerCase().replace(" ", "_");
@@ -55,6 +60,7 @@ public class MenuService {
                 .orElseThrow(() -> new RuntimeException("Menu not found with id " + id));
     }
 
+    @CacheEvict(value = {"menus", "menu"}, allEntries = true)
     public void softDelete(Long id) {
         Menu menu = menuRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cannot delete. Menu not found with id " + id));

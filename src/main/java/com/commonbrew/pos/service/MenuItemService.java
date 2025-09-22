@@ -2,6 +2,8 @@ package com.commonbrew.pos.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.commonbrew.pos.model.Menu;
@@ -18,18 +20,22 @@ public class MenuItemService {
     private final MenuItemRepository itemRepository;
     private final MenuRepository menuRepository;
 
+    @Cacheable("menuItems")
     public List<MenuItem> getAllItems() {
         return itemRepository.findAll();
     }
 
+    @Cacheable(value = "menuItemsByMenu", key = "#menuId")
     public List<MenuItem> getMenuItemsByMenuId(Long menuId) {
         return itemRepository.findByMenuId(menuId);
     }
-
+    
+    @Cacheable(value = "menuItem", key = "#id")
     public MenuItem getItemById(Long id) {
         return itemRepository.findById(id).orElse(null);
     }
 
+    @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
     public MenuItem saveItem(Long menuId, MenuItem item) {
         // Load the managed Menu entity
         Menu menu = menuRepository.findById(menuId)
@@ -54,6 +60,7 @@ public class MenuItemService {
         return itemRepository.save(item);
     }
 
+    @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
     public void deleteItem(Long id) {
         MenuItem item = itemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item ID: " + id));

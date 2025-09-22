@@ -29,8 +29,9 @@ public class Order {
     @Column(name = "order_id") 
     private Long id;
 
-    private LocalDateTime orderTime;
-    
+    @OneToMany(mappedBy="order", cascade=CascadeType.ALL)
+    private List<OrderItem> items;
+
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
@@ -41,7 +42,6 @@ public class Order {
 
     private String barista;
 
-    @OneToMany(mappedBy="order", cascade=CascadeType.ALL)
-    private List<OrderItem> items;
+    private LocalDateTime orderTime;
 
 }
