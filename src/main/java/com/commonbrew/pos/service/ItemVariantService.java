@@ -31,7 +31,7 @@ public class ItemVariantService {
 
     @Cacheable(value = "variantsByItem", key = "#menuItemId")
     public List<ItemVariant> getVariantsByMenuItemId(Long menuItemId) {
-        return variantRepository.findByMenuItemId(menuItemId);
+        return variantRepository.findByMenuItemIdWithMenuItem(menuItemId);
     }
 
     @Transactional

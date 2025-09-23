@@ -22,17 +22,17 @@ public class MenuItemService {
 
     @Cacheable("menuItems")
     public List<MenuItem> getAllItems() {
-        return itemRepository.findAll();
+        return itemRepository.findAllWithVariants();
     }
 
     @Cacheable(value = "menuItemsByMenu", key = "#menuId")
     public List<MenuItem> getMenuItemsByMenuId(Long menuId) {
-        return itemRepository.findByMenuId(menuId);
+        return itemRepository.findByMenuIdWithVariants(menuId);
     }
     
     @Cacheable(value = "menuItem", key = "#id")
     public MenuItem getItemById(Long id) {
-        return itemRepository.findById(id).orElse(null);
+        return itemRepository.findByIdWithVariants(id).orElse(null);
     }
 
     @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.commonbrew.pos.model.ItemVariant;
@@ -30,5 +31,8 @@ public interface ItemVariantRepository extends JpaRepository<ItemVariant, Long> 
      * Batch lookup by variant ids.
      */
     List<ItemVariant> findByVariantIdIn(List<Long> variantIds);
+    
+    @Query("SELECT iv FROM ItemVariant iv LEFT JOIN FETCH iv.menuItem WHERE iv.menuItem.id = :menuItemId")
+    List<ItemVariant> findByMenuItemIdWithMenuItem(Long menuItemId);
 
 }

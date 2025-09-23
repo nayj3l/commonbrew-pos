@@ -1,6 +1,7 @@
 package com.commonbrew.pos.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,14 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
     List<MenuItem> findAllActive();
 
     List<MenuItem> findByMenuName(String menuName);
+    
+    // with JOIN FETCH
+    @Query("SELECT DISTINCT mi FROM MenuItem mi LEFT JOIN FETCH mi.variants WHERE mi.active = true")
+    List<MenuItem> findAllWithVariants();
+    
+    @Query("SELECT mi FROM MenuItem mi LEFT JOIN FETCH mi.variants WHERE mi.menu.id = :menuId AND mi.active = true")
+    List<MenuItem> findByMenuIdWithVariants(Long menuId);
+    
+    @Query("SELECT mi FROM MenuItem mi LEFT JOIN FETCH mi.variants WHERE mi.id = :id")
+    Optional<MenuItem> findByIdWithVariants(Long id);
 }
