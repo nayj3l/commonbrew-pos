@@ -170,14 +170,12 @@
     border-radius: 14px;
     cursor: pointer;
     text-align: center;
-    /* transition: all 0.3s ease; */
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    white-space: normal; /* wrap text if needed */
+    white-space: normal;
 }
 
 /* Hover / Active / Selected */
 #itemsModalBody .btn:hover {
-    /* transform: translateY(-2px); */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
@@ -194,8 +192,8 @@
 }
 
 #itemsModal .modal-content {
-    height: 100%;
-    border-radius: 12px; /* slight padding around modal */
+    /* height: 100%; */
+    border-radius: 12px;
     margin: 8px;
     display: flex;
     flex-direction: column;
@@ -233,7 +231,6 @@
 #itemsModal .modal-content {
     display: flex;
     flex-direction: column;
-    max-height: 80vh; /* optional, limits modal height */
 }
 
 #itemsModal .modal-body {
@@ -253,7 +250,7 @@
 }
 
 #itemsModal .modal-footer .btn-close-bottom:hover {
-    background: #c82333; /* darker red on hover */
+    background: #c82333;
 }
 
 /* Disable "rubber band" overscroll on the whole page */
@@ -297,4 +294,9 @@
 #variantModal .modal-footer {
     flex-shrink: 0; /* don’t shrink */
 }
+
+.order.container.mt-4 .modal-dialog.modal-dialog-centered.modal-lg {
+    padding: 10px;
+}
+
 

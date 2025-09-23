@@ -93,7 +93,7 @@
 
 /* Mobile-First Adjustments */
 @media (max-width: 576px) {
-    .category-container .category-item .category-btn {
+    /* .category-container .category-item .category-btn {
         font-size: 1rem;
-    }
+    } */
 }
