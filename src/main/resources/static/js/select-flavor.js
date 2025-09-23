@@ -8,11 +8,11 @@ function loadItems(menuId) {
             return response.json();
         })
         .then((items) => {
-            const container = document.getElementById("itemsModalBody");
-            container.innerHTML = "";
+            const selectFlavor = document.getElementById("itemsModalBody");
+            selectFlavor.innerHTML = "";
 
             if (!items || items.length === 0) {
-                container.innerHTML = '<p class="text-center">No items available in this category</p>';
+                selectFlavor.innerHTML = '<p class="text-center">No items available in this category</p>';
                 return;
             }
 
@@ -20,18 +20,18 @@ function loadItems(menuId) {
                 const itemDiv = document.createElement("div");
                 itemDiv.className = "mb-2";
 
-                const btn = document.createElement("button");
-                btn.className = "btn btn-outline-success item-btn";
-                btn.textContent = item.name;
-                btn.dataset.itemId = item.id;
-                btn.dataset.itemPrice = item.basePrice;
-                btn.onclick = function() {
+                const flavorBtn = document.createElement("button");
+                flavorBtn.className = "btn btn-outline-success item-btn";
+                flavorBtn.textContent = item.name;
+                flavorBtn.dataset.itemId = item.id;
+                flavorBtn.dataset.itemPrice = item.basePrice;
+                flavorBtn.onclick = function() {
                     addToOrder(this);
                     bootstrap.Modal.getInstance(document.getElementById("itemsModal")).hide();
                 };
 
-                itemDiv.appendChild(btn);
-                container.appendChild(itemDiv);
+                itemDiv.appendChild(flavorBtn);
+                selectFlavor.appendChild(itemDiv);
             });
 
             // show modal
