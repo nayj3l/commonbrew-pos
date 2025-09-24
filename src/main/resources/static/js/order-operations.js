@@ -1,7 +1,7 @@
 let selectedVariant = null; 
 let selectedItemName = "";
 
-// Select Variant & Add-ons using cached data
+// Select Variant & Addons using cached data
 function loadVariants(button) {
     console.log('=== loadVariants START ===');
     

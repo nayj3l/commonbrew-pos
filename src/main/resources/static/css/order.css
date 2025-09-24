@@ -1,4 +1,4 @@
-.order-container {
+.cart {
     position: sticky;
     bottom: 0;
     left: 0;
@@ -110,7 +110,7 @@
 }
 
 /* Place Order Button - Big, touch-friendly */
-.order-container .btn-success {
+.cart .btn-success {
     padding: 14px 22px;
     font-size: 16px;
     font-weight: 700;
@@ -121,7 +121,7 @@
     /* transition: all 0.3s ease; */
 }
 
-.order-container .btn-success:hover {
+.cart .btn-success:hover {
     /* transform: translateY(-2px); */
     box-shadow: 0 6px 18px rgba(76, 201, 240, 0.4);
 }

@@ -359,9 +359,8 @@
         </a>
     </div>
 
-
     <!-- Order Section -->
-    <div class="order container mt-4">
+    <div class="order container mt-4" id="orderContainer">
         <div class="card p-4 shadow-sm rounded">
             <h1 class="text-center mb-4 fw-bold">Place Order</h1>
 
@@ -387,11 +386,11 @@
         </div>
 
         <!-- Current Order Section -->
-        <div class="order-container">
+        <div class="cart">
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <span class="order-total">Total: ₱<span id="order-total">0.00</span></span>
                 <button class="btn btn-success btn-lg" type="button" onclick="confirmOrder()">
-                    Place Order
+                    Cart
                 </button>
             </div>
         </div>
@@ -403,7 +402,7 @@
 
                     <!-- Modal Header -->
                     <div class="modal-header justify-content-center">
-                        <h5 class="modal-title" id="variantModalLabel">Select Variant & Add-ons</h5>
+                        <h5 class="modal-title" id="variantModalLabel">Select Variant & Addons</h5>
                     </div>
 
 
@@ -462,7 +461,7 @@
         </form>
 
         <!-- Items Modal -->
-        <div class="modal " id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
+        <div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" id="items-container">
                 <div class="modal-content">
                     <!-- Modal Header (title only) -->
@@ -491,7 +490,6 @@
         <script th:src="@{/js/addons.js}"></script>
         <script th:src="@{/js/order-rendering.js}"></script>
         <script th:src="@{/js/order-operations.js}"></script>
-        <script th:src="@{/js/select-flavor.js}"></script>
         <script th:src="@{/js/event-handlers.js}"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -524,6 +522,16 @@
             </div>
         </div>
     </div>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            window.preloadedMenus = [[${menu}]];
+            window.preloadedItems = [[${items}]];
+            window.preloadedVariants = [[${variants}]];
+            window.preloadedAddons = [[${addons}]];
+        });
+    </script>
+    <script th:src="@{/js/cache-manager.js}"></script>
+    <script th:src="@{/js/select-flavor.js}"></script>
 </body>
 
 </html>
