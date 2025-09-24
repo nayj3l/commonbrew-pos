@@ -25,11 +25,15 @@ import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.dto.AddonConfirmSummary;
+import com.commonbrew.pos.model.dto.AddonResponse;
 import com.commonbrew.pos.model.dto.ItemVariantDto;
+import com.commonbrew.pos.model.dto.ItemVariantResponse;
 import com.commonbrew.pos.model.dto.MenuItemDto;
+import com.commonbrew.pos.model.dto.MenuItemResponse;
 import com.commonbrew.pos.model.dto.OrderConfirmSummary;
 import com.commonbrew.pos.model.dto.OrderConfirmSummaryResponse;
 import com.commonbrew.pos.service.AddonService;
+import com.commonbrew.pos.service.ItemVariantService;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
 import com.commonbrew.pos.service.OrderService;
@@ -47,15 +51,18 @@ public class OrderController {
     private final AddonService addonService;
     private final OrderService orderService;
     private final MenuService menuService;
+    private final ItemVariantService itemVariantService;
 
     @GetMapping
     public String showOrderPage(Model model) {
         List<Menu> menu = menuService.getAllMenu();
-        List<MenuItem> menuItems = itemService.getAllItems();
-        List<Addon> addons = addonService.getAllAddons();
+        List<MenuItemResponse> menuItems = itemService.getAllItems();
+        List<AddonResponse> addons = addonService.getAllAddons();
+        List<ItemVariantResponse> variants = itemVariantService.getAllVariants();
 
         model.addAttribute("menu", menu);
         model.addAttribute("items", menuItems);
+        model.addAttribute("variants", variants);
         model.addAttribute("addons", addons);
 
         return "order";

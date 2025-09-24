@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.commonbrew.pos.model.MenuItem;
+import com.commonbrew.pos.model.dto.MenuItemResponse;
 import com.commonbrew.pos.service.MenuItemService;
 
 @RestController
@@ -22,7 +23,7 @@ public class MenuItemController {
     }
 
     @GetMapping
-    public List<MenuItem> getAllItems() {
+    public List<MenuItemResponse> getAllItems() {
         return itemService.getAllItems();
     }
 

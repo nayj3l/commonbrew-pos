@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
+import com.commonbrew.pos.model.dto.AddonResponse;
 import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 
@@ -22,13 +23,14 @@ public class AddonService {
     private final MenuRepository menuRepository;
 
     @Cacheable("addons")
-    public List<Addon> getAllAddons() {
+    public List<AddonResponse> getAllAddons() {
         List<Addon> addons = addonRepository.findAll();
-        // Initialize lazy collections
         addons.forEach(addon -> Hibernate.initialize(addon.getMenu()));
-        return addons;
-    }
 
+        return addons.stream()
+                .map(this::mapToAddonResponse)
+                .toList();
+    }
     @Cacheable(value = "addon", key = "#id")
     public Addon getAddonById(Long id) {
         Addon addon = addonRepository.findById(id).orElse(null);
@@ -50,5 +52,13 @@ public class AddonService {
     @CacheEvict(value = {"addons", "addon"}, allEntries = true)
     public void deleteAddon(Long id) {
         addonRepository.deleteById(id);
+    }
+
+    private AddonResponse mapToAddonResponse(Addon addon) {
+        return AddonResponse.builder()
+                .addonId(addon.getAddonId())
+                .addonName(addon.getAddonName())
+                .price(addon.getPrice())
+                .build();
     }
 }

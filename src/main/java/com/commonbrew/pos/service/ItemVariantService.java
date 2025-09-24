@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.commonbrew.pos.model.ItemVariant;
+import com.commonbrew.pos.model.dto.ItemVariantResponse;
 import com.commonbrew.pos.repository.ItemVariantRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,10 @@ public class ItemVariantService {
     private final ItemVariantRepository variantRepository;
 
     @Cacheable("variants")
-    public List<ItemVariant> getAllVariants() {
-        return variantRepository.findAll();
+    public List<ItemVariantResponse> getAllVariants() {
+        return variantRepository.findAll().stream()
+                .map(this::mapToItemVariantResponse)
+                .toList();
     }
 
     @Cacheable(value = "variant", key = "#id")
@@ -44,5 +47,15 @@ public class ItemVariantService {
     @CacheEvict(value = {"variants", "variant", "variantsByItem"}, allEntries = true)
     public void deleteVariant(Long id) {
         variantRepository.deleteById(id);
+    }
+
+    private ItemVariantResponse mapToItemVariantResponse(ItemVariant variant) {
+        return ItemVariantResponse.builder()
+                .variantId(variant.getVariantId())
+                .variantName(variant.getVariantName())
+                .price(variant.getPrice())
+                .code(variant.getCode())
+                .active(variant.isActive())
+                .build();
     }
 }

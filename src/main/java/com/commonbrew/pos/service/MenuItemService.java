@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
+import com.commonbrew.pos.model.dto.AddonResponse;
+import com.commonbrew.pos.model.dto.ItemVariantResponse;
+import com.commonbrew.pos.model.dto.MenuItemResponse;
 import com.commonbrew.pos.repository.MenuItemRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 
@@ -21,8 +24,11 @@ public class MenuItemService {
     private final MenuRepository menuRepository;
 
     @Cacheable("menuItems")
-    public List<MenuItem> getAllItems() {
-        return itemRepository.findAllWithVariants();
+    public List<MenuItemResponse> getAllItems() {
+        return itemRepository.findAllWithVariants()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Cacheable(value = "menuItemsByMenu", key = "#menuId")
@@ -71,5 +77,36 @@ public class MenuItemService {
         }
 
         itemRepository.save(item);
+    }
+
+    private MenuItemResponse mapToResponse(MenuItem menuItem) {
+        return MenuItemResponse.builder()
+                .id(menuItem.getId())
+                .name(menuItem.getName())
+                .active(menuItem.isActive())
+                .menuId(menuItem.getMenu() != null ? menuItem.getMenu().getId() : null)
+                .variants(
+                        menuItem.getVariants().stream()
+                                .map(variant -> ItemVariantResponse.builder()
+                                        .variantId(variant.getVariantId())
+                                        .variantName(variant.getVariantName())
+                                        .price(variant.getPrice())
+                                        .code(variant.getCode())
+                                        .active(variant.isActive())
+                                        .build()
+                                )
+                                .toList()
+                )
+                .addons(
+                        menuItem.getMenu().getAddons().stream()
+                                .map(addon -> AddonResponse.builder()
+                                        .addonId(addon.getAddonId())
+                                        .addonName(addon.getAddonName())
+                                        .price(addon.getPrice())
+                                        .build()
+                                )
+                                .toList()
+                )
+                .build();
     }
 }

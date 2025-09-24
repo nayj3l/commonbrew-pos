@@ -1,5 +1,7 @@
 package com.commonbrew.pos.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,8 +24,9 @@ public class ItemVariant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long variantId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "menu_item_id", nullable = false)
+    @JsonIgnore
     private MenuItem menuItem;
 
     // e.g. "Regular", "Upsize", "Sliced", "4-inch", or "Default"
