@@ -1,11 +1,11 @@
 let selectedVariant = null; 
 let selectedItemName = "";
 
-// Select Variant & Add-ons
-function addToOrder(button) {
+// Select Variant & Add-ons using cached data
+function loadVariants(button) {
+    console.log('=== loadVariants START ===');
+    
     const variantQuantitiesDiv = document.getElementById('variantModalBody');
-
-    // Clear previous content
     variantQuantitiesDiv.innerHTML = '';
 
     const itemId = button.getAttribute("data-item-id");
@@ -20,104 +20,129 @@ function addToOrder(button) {
     const modal = new bootstrap.Modal(document.getElementById("variantModal"));
     modal.show();
 
-    fetch(`/order/items/${itemId}/variants`)
-        .then(res => res.json())
-        .then(variants => {
-            modalBody.innerHTML = ""; // clear loading message
+    try {
+        // Use cached data
+        const orderData = loadOrderData();
 
-            if (!variants || variants.length === 0) {
-                // no variants available
-                modalBody.innerHTML = "<p class='text-center'>No variants available for this item.</p>";
-                selectedVariant = null; 
-                addToOrderBtn.style.display = "none";
-                return;
-            }
+        console.log('Cached data loaded:', orderData);
 
-            // Reset the "Add to Order" button
-            addToOrderBtn.style.display = "flex";
+        // Convert itemId to number for comparison
+        const numericItemId = Number(itemId);
+        
+        // Find the item in cached data
+        const item = orderData.items.find(item => item.id === numericItemId);
+        console.log('Found item:', item);
 
-            // Display variant buttons
-            variants.forEach(variant => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "d-flex justify-content-between align-items-center border rounded p-2 mb-2";
+        if (!item) {
+            modalBody.innerHTML = "<p class='text-center text-danger'>Item not found in cached data.</p>";
+            selectedVariant = null;
+            addToOrderBtn.style.display = "none";
+            return;
+        }
 
-                // LEFT panel (variant name + price + controls)
-                const leftPanel = document.createElement("div");
-                leftPanel.className = "d-flex flex-column";
+        // Use the variants from the item (they're already in the item object)
+        const variants = item.variants || [];
+        console.log('Item variants:', variants);
 
-                // Variant label (name + base price)
-                const label = document.createElement("div");
-                label.textContent = `${variant.variantName} (₱${variant.price.toFixed(2)})`;
+        modalBody.innerHTML = ""; // clear loading message
 
-                // Controls row
-                const controls = document.createElement("div");
-                controls.className = "d-flex align-items-center mt-1";
+        if (!variants || variants.length === 0) {
+            modalBody.innerHTML = "<p class='text-center'>No variants available for this item.</p>";
+            selectedVariant = null; 
+            addToOrderBtn.style.display = "none";
+            return;
+        }
 
-                const minusBtn = document.createElement("button");
-                minusBtn.className = "btn btn-sm btn-danger d-flex align-items-center justify-content-center";
-                minusBtn.innerHTML = '<i class="bi bi-dash"></i>';
+        // Reset the "Add to Order" button
+        addToOrderBtn.style.display = "flex";
 
-                const qtyInput = document.createElement("input");
-                qtyInput.type = "number";
-                qtyInput.id = `qty-${variant.variantId}`;
-                qtyInput.value = 0;
-                qtyInput.min = 0;
-                qtyInput.className = "form-control form-control-sm text-center mx-2";
-                qtyInput.style.width = "60px";
+        // Display variant buttons
+        variants.forEach(variant => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "d-flex justify-content-between align-items-center border rounded p-2 mb-2";
 
-                qtyInput.dataset.variantId = variant.variantId;
-                qtyInput.dataset.variantName = variant.variantName;
-                qtyInput.dataset.price = variant.price;
-                qtyInput.dataset.variantAd = variant.variantAd;
+            // LEFT panel (variant name + price + controls)
+            const leftPanel = document.createElement("div");
+            leftPanel.className = "d-flex flex-column";
 
-                const plusBtn = document.createElement("button");
-                plusBtn.className = "btn btn-sm btn-success d-flex align-items-center justify-content-center";
-                plusBtn.innerHTML = '<i class="bi bi-plus"></i>';
+            // Variant label (name + base price)
+            const label = document.createElement("div");
+            label.textContent = `${variant.variantName} (₱${variant.price.toFixed(2)})`;
 
-                controls.appendChild(minusBtn);
-                controls.appendChild(qtyInput);
-                controls.appendChild(plusBtn);
+            // Controls row
+            const controls = document.createElement("div");
+            controls.className = "d-flex align-items-center mt-1";
 
-                leftPanel.appendChild(label);
-                leftPanel.appendChild(controls);
+            const minusBtn = document.createElement("button");
+            minusBtn.className = "btn btn-sm btn-danger d-flex align-items-center justify-content-center";
+            minusBtn.innerHTML = '<i class="bi bi-dash"></i>';
 
-                // RIGHT panel (total price)
-                const totalLabel = document.createElement("div");
-                totalLabel.className = "fw-bold text-end variant-total";
-                totalLabel.textContent = "₱0.00";
+            const qtyInput = document.createElement("input");
+            qtyInput.type = "number";
+            qtyInput.id = `qty-${variant.variantId}`;
+            qtyInput.value = 0;
+            qtyInput.min = 0;
+            qtyInput.className = "form-control form-control-sm text-center mx-2";
+            qtyInput.style.width = "60px";
 
-                // Update function
-                const updateTotal = () => {
-                    const qty = parseInt(qtyInput.value) || 0;
-                    const total = variant.price * qty;
-                    totalLabel.textContent = `₱${total.toFixed(2)}`;
-                };
+            qtyInput.dataset.variantId = variant.variantId;
+            qtyInput.dataset.variantName = variant.variantName;
+            qtyInput.dataset.price = variant.price;
+            qtyInput.dataset.variantAd = variant.variantAd;
 
-                plusBtn.onclick = () => {
-                    qtyInput.value = parseInt(qtyInput.value) + 1;
+            const plusBtn = document.createElement("button");
+            plusBtn.className = "btn btn-sm btn-success d-flex align-items-center justify-content-center";
+            plusBtn.innerHTML = '<i class="bi bi-plus"></i>';
+
+            controls.appendChild(minusBtn);
+            controls.appendChild(qtyInput);
+            controls.appendChild(plusBtn);
+
+            leftPanel.appendChild(label);
+            leftPanel.appendChild(controls);
+
+            // RIGHT panel (total price)
+            const totalLabel = document.createElement("div");
+            totalLabel.className = "fw-bold text-end variant-total";
+            totalLabel.textContent = "₱0.00";
+
+            // Update function
+            const updateTotal = () => {
+                const qty = parseInt(qtyInput.value) || 0;
+                const total = variant.price * qty;
+                totalLabel.textContent = `₱${total.toFixed(2)}`;
+            };
+
+            plusBtn.onclick = () => {
+                qtyInput.value = parseInt(qtyInput.value) + 1;
+                updateTotal();
+            };
+
+            minusBtn.onclick = () => {
+                if (parseInt(qtyInput.value) > 0) {
+                    qtyInput.value = parseInt(qtyInput.value) - 1;
                     updateTotal();
-                };
+                }
+            };
 
-                minusBtn.onclick = () => {
-                    if (parseInt(qtyInput.value) > 0) {
-                        qtyInput.value = parseInt(qtyInput.value) - 1;
-                        updateTotal();
-                    }
-                };
+            qtyInput.addEventListener('change', updateTotal);
+            qtyInput.addEventListener('input', updateTotal);
 
-                wrapper.appendChild(leftPanel);
-                wrapper.appendChild(totalLabel);
+            wrapper.appendChild(leftPanel);
+            wrapper.appendChild(totalLabel);
 
-                modalBody.appendChild(wrapper);
-            });
-
-        })
-        .catch(err => {
-            console.error(err);
-            modalBody.innerHTML = "<p class='text-center text-danger'>Error loading variants. Please try again.</p>";
+            modalBody.appendChild(wrapper);
         });
+
+        console.log('=== loadVariants END ===');
+
+    } catch (error) {
+        console.error('Error in loadVariants:', error);
+        modalBody.innerHTML = "<p class='text-center text-danger'>Error loading variants from cache. Please try again.</p>";
+    }
 }
 
+// The rest of your functions remain the same...
 function getSelectedVariants() {
     const selectedVariants = [];
     const quantityInputs = document.querySelectorAll('#variantModalBody input[type="number"]');
@@ -137,7 +162,6 @@ function getSelectedVariants() {
     return selectedVariants;
 }
 
-// Update addons in order
 function updateAddons() {
     currentOrder.addons = [];
 
@@ -166,10 +190,8 @@ function updateAddons() {
         });
 
     calculateTotal();
-    // renderOrder();
 }
 
-// Increment item quantity
 function incrementItem(itemId) {
     const item = currentOrder.items.find((item) => item.itemId == itemId);
     if (item) {
@@ -179,7 +201,6 @@ function incrementItem(itemId) {
     }
 }
 
-// Decrement item quantity
 function decrementItem(itemId) {
     const itemIndex = currentOrder.items.findIndex(
         (item) => item.itemId == itemId
@@ -196,7 +217,6 @@ function decrementItem(itemId) {
     }
 }
 
-// Increment addon quantity
 function incrementAddon(itemId, addonId) {
     const item = currentOrder.items.find(i => i.itemId == itemId);
     if (!item || !item.addons) return;
@@ -209,7 +229,6 @@ function incrementAddon(itemId, addonId) {
     }
 }
 
-// Decrement addon quantity
 function decrementAddon(itemId, addonId) {
     const item = currentOrder.items.find(i => i.itemId == itemId);
     if (!item || !item.addons) return;
@@ -220,15 +239,12 @@ function decrementAddon(itemId, addonId) {
         if (addon.quantity > 1) {
             addon.quantity -= 1;
         } else {
-            // Remove only the addon, not the item
             item.addons.splice(addonIndex, 1);
         }
-        // IMPORTANT: do NOT remove the item just because addons is empty
         calculateTotal();
         renderModalOrder();
     }
 }
-
 
 function renderOrderModal() {
     const panel = document.getElementById("modal-order-summary");
@@ -255,47 +271,29 @@ function renderOrderModal() {
             <div>₱<span id="item-total-${item.itemId}">${(item.itemPrice * item.quantity).toFixed(2)}</span></div>
         </div>
         `;
-    });
-
-    // currentOrder.addons.forEach((addon) => {
-    //     html += `
-    //     <div class="order-item d-flex justify-content-between align-items-center mb-2">
-    //         <div>
-    //             <button class="btn btn-sm btn-danger ms-2" onclick="decrementAddon(${addon.addonId}); renderOrderModal();">
-    //                 <i class="bi bi-dash"></i>
-    //             </button>
-    //             <button class="btn btn-sm btn-success" onclick="incrementAddon(${addon.addonId}); renderOrderModal();">
-    //                 <i class="bi bi-plus"></i>
-    //             </button>
-    //             <span>${addon.addonName} x<span id="addon-qty-${addon.addonId}">${addon.quantity}</span></span>
-    //         </div>
-    //         <div>₱<span id="addon-total-${addon.addonId}">${(addon.price * addon.quantity).toFixed(2)}</span></div>
-    //     </div>
-    //     `;
-    // });
-
-    if (item.addons && item.addons.length > 0) {
-        item.addons.forEach((addon) => {
-            html += `
-            <div class="order-addon d-flex justify-content-between align-items-center mb-1 ms-4 text-muted">
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-sm btn-outline-danger btn-sm" onclick="decrementAddon('${item.itemId}', '${addon.addonId}'); renderOrderModal();">
-                        <i class="bi bi-dash"></i>
-                    </button>
-                    <span class="mx-1">${addon.quantity}</span>
-                    <button class="btn btn-sm btn-outline-success btn-sm" onclick="incrementAddon('${item.itemId}', '${addon.addonId}'); renderOrderModal();">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                    <span class="ms-2 small">+ ${addon.addonName}</span>
+        
+        if (item.addons && item.addons.length > 0) {
+            item.addons.forEach((addon) => {
+                html += `
+                <div class="order-addon d-flex justify-content-between align-items-center mb-1 ms-4 text-muted">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-danger btn-sm" onclick="decrementAddon('${item.itemId}', '${addon.addonId}'); renderOrderModal();">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <span class="mx-1">${addon.quantity}</span>
+                        <button class="btn btn-sm btn-outline-success btn-sm" onclick="incrementAddon('${item.itemId}', '${addon.addonId}'); renderOrderModal();">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                        <span class="ms-2 small">+ ${addon.addonName}</span>
+                    </div>
+                    <div class="small">₱${(addon.price * addon.quantity).toFixed(2)}</div>
                 </div>
-                <div class="small">₱${(addon.price * addon.quantity).toFixed(2)}</div>
-            </div>
-            `;
-        });
-    }
+                `;
+            });
+        }
+    });
 
     panel.innerHTML = html;
     calculateTotal();
     document.getElementById("modal-order-total").textContent = currentOrder.total.toFixed(2);
 }
-
