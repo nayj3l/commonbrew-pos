@@ -8,9 +8,12 @@
 }
 
 .addon-checkbox {
+	float: left;
+	margin: 8px !important;
 	appearance: none;
-	width: 24px;
-	height: 24px;
+    pointer-events: none; 
+	width: 16px;
+	height: 16px;
 	border-radius: 6px;
 	border: 2px solid #c3cfe2;
 	margin-right: 10px;
@@ -24,21 +27,14 @@
     overflow-y: auto;   /* allow vertical scroll if content exceeds */
 }
 
-.addon-card  {  
+.addon-card  {
 	display: flex;
   	flex-direction: row;
   	justify-content: flex-start;
 	align-items: center;
 	overflow: hidden;
 	font-size: 14px;
-	line-height: 1.3;
-}
-
-.form-check .form-check-input {
-	float: left;
-	margin: 8px !important;
-	width: 14px;
-  	height: 14px;
+	line-height: 1.5;
 }
 
 .addon-card label,
@@ -77,4 +73,28 @@ input {
 		grid-template-columns: 1fr;
 	}
 
+}
+
+.addon-title {
+	border-bottom: 0 !important;
+}
+
+#addonOptions {
+    max-height: 0; /* start collapsed */
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+#addonOptions:not(.collapsed) {
+    max-height: 1000px; /* expanded */
+}
+
+#addon-toggle.collapsed {
+    transform: rotate(-90deg);
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+#addon-toggle:not(.collapsed) {
+    transform: rotate(0deg);
 }

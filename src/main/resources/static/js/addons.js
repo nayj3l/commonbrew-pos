@@ -38,7 +38,7 @@ function addVariantsWithAddons() {
     
     // Check if at least one variant has quantity > 0
     if (selectedVariants.length === 0) {
-        alert("Please select at least one variant with quantity greater than 0!");
+        alert("Please select a variant");
         return;
     }
     
@@ -95,12 +95,95 @@ function resetSelections() {
     currentItemName = "";
 }
 
-document.querySelectorAll("#addonOptions > div").forEach(card => {
-    card.addEventListener("click", function(e) {
-        if (e.target.tagName === "INPUT") return;
+// Add event listener to the parent container that holds all addon cards
+document.addEventListener('click', function(e) {
+    const addonCard = e.target.closest('.addon-card');
+    if (!addonCard) return;
 
-        const checkbox = card.querySelector("input[type=checkbox]");
-        checkbox.checked = !checkbox.checked;
-        updateSelectedAddons();
-    });
+    const addonId = addonCard.dataset.addonId;
+    const checkbox = addonCard.querySelector('.addon-checkbox'); // first
+    const price = parseFloat(checkbox.dataset.addonPrice) || 0;  // then use it
+    const qtyControls = addonCard.querySelector('.addon-quantity-controls');
+    const qtyInput = addonCard.querySelector('.addon-qty');
+    const totalDisplay = addonCard.querySelector('.addon-total');
+
+    // Handle plus button
+    if (e.target.closest('.addon-plus')) {
+        let currentQty = parseInt(qtyInput.value) || 0;
+        currentQty++;
+        
+        qtyInput.value = currentQty;
+
+        // ✅ Auto-check the checkbox when qty > 0
+        checkbox.checked = currentQty > 0;
+
+        updateAddonTotal(qtyInput, price, totalDisplay);
+        if (checkbox.checked) updateSelectedAddons();
+    }
+
+    // Handle minus button
+    if (e.target.closest('.addon-minus')) {
+        let currentQty = parseInt(qtyInput.value) || 0;
+        if (currentQty > 0) {
+            currentQty--;
+            qtyInput.value = currentQty;
+
+            // Auto-uncheck if quantity is 0
+            checkbox.checked = currentQty > 0;
+
+            updateAddonTotal(qtyInput, price, totalDisplay);
+            if (checkbox.checked) updateSelectedAddons();
+        }
+    }
+
+    // Handle checkbox change to show/hide quantity controls
+    if (e.target.classList.contains('addon-checkbox')) {
+        if (checkbox.checked) {
+            qtyControls.style.display = 'block';
+            updateAddonTotal(qtyInput, price, totalDisplay);
+        } else {
+            qtyControls.style.display = 'none';
+            qtyInput.value = 1; // Reset to 1 when unchecked
+            updateAddonTotal(qtyInput, price, totalDisplay);
+        }
+    }
 });
+
+// Function to update addon total display
+function updateAddonTotal(qtyInput, price, totalDisplay) {
+    const qty = parseInt(qtyInput.value) || 0;
+    const addonPrice = parseFloat(price) || 0;
+    const total = addonPrice * qty;
+    
+    // Add green highlight effect
+    totalDisplay.classList.add('updated');
+    setTimeout(() => {
+        totalDisplay.classList.remove('updated');
+    }, 500); // remove after 0.5 seconds
+    
+    totalDisplay.textContent = `₱${total.toFixed(2)}`;
+}
+
+// Update your updateSelectedAddons function to include quantities
+function updateSelectedAddons() {
+    const selectedAddons = [];
+    document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+        const addonCard = checkbox.closest('.addon-card');
+        const qtyInput = addonCard.querySelector('.addon-qty');
+        selectedAddons.push({
+            addonId: checkbox.value,
+            quantity: parseInt(qtyInput.value),
+            price: parseFloat(checkbox.dataset.addonPrice)
+        });
+    });
+    
+    console.log('Selected addons:', selectedAddons);
+}
+
+function toggleAddons() {
+    const addonContainer = document.getElementById("addonOptions");
+    const toggleIcon = document.getElementById("addon-toggle");
+
+    addonContainer.classList.toggle("collapsed");
+    toggleIcon.classList.toggle("collapsed");
+}

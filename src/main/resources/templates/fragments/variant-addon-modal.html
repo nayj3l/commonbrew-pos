@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" xml:lang="en">
+
+<body>
+    <div th:fragment="variantAddonModal">
+        <!-- Variant + Addons Selection Modal -->
+        <div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header justify-content-center">
+                        <h5 class="modal-title" id="variantModalLabel">Select Variant & Addons</h5>
+                    </div>
+
+
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <!-- Variant Buttons -->
+                        <div id="variantModalBody" class="mb-4">
+                            <!-- JS will inject variant buttons here -->
+                        </div>
+
+                        <hr class="custom-hr">
+
+                        <!-- Addons Section -->
+                        <div class="addon-title section-title" onclick="toggleAddons()">
+                            <span>Addon Categories</span>
+                            <span class="toggle-icon" id="addon-toggle" style="margin-left: 10px;">▼</span>
+                        </div>
+                        <div id="addonOptions" class="addon-grid collapsed">
+                            <div class="addon-card-wrapper p-1 text-center" th:each="addon : ${addons}">
+                                <div class="form-check card p-2 addon-card"
+                                    style="border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:pointer;">
+
+                                    <div class="addon-row d-flex align-items-stretch justify-content-between">
+                                        <!-- Minus Button -->
+                                        <button type="button" class="btn btn-sm btn-danger btn-sm addon-minus"
+                                            style="width: 48px;">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+
+                                        <div class="addon-details p-1 d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input class="form-check-input addon-checkbox" type="checkbox"
+                                                    th:id="'addon-'+${addon.addonId}" th:value="${addon.addonId}"
+                                                    th:data-addon-price="${addon.price}"
+                                                    onchange="updateSelectedAddons()" />
+
+                                                <div>
+                                                    <span th:text="${addon.addonName}">Addon Name</span>
+                                                    <small
+                                                        class="text-muted px-2 py-1 rounded-pill border border-secondary"
+                                                        th:text="'₱' + ${#numbers.formatDecimal(addon.price, 1, 2)}">₱0.00</small>
+                                                </div>
+                                            </div>
+
+                                            <!-- Divider -->
+                                            <div style="width: 80%; border-top: 1px solid #ccc; margin: 8px 0;"></div>
+
+                                            <div class="ms-2 d-flex align-items-center gap-2">
+                                                <input type="number"
+                                                    class="form-control form-control-sm text-center addon-qty" value="0"
+                                                    min="0" max="10" style="width: 60px;" readonly>
+                                                <div class="addon-total small text-muted fw-bold">₱0.00</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Plus Button -->
+                                        <button type="button" class="btn btn-sm btn-success btn-sm addon-plus"
+                                            style="width: 48px;">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer d-flex flex-column flex-md-row gap-2">
+                        <button type="button" class="btn btn-danger btn-lg w-100 fw-semibold rounded-3"
+                            data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <button type="button" class="btn btn-success w-100 w-md-auto" id="addVariantBtn"
+                            onclick="addVariantsWithAddons()">
+                            Add to Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

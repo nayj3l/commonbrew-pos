@@ -275,13 +275,11 @@
 #variantModal .modal-dialog {
     display: flex;
     flex-direction: column;
-    height: 100%; /* fill available space */
 }
 
 #variantModal .modal-content {
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 
 /* Make modal body take all available space and scrollable */
@@ -299,4 +297,33 @@
     padding: 10px;
 }
 
+#addonOptions {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+}
 
+#addonOptions .addon-row{
+    width: 100%;
+}
+
+.addon-row .btn {
+    font-size: 20px;
+}
+
+#addonOptions > .addon-card-wrapper {
+    /* flex: 0 0 calc(50% - 10px); */
+    box-sizing: border-box;
+    height: auto;    
+}
+
+.addon-total {
+    color:  var(--bs-secondary-color) !important;
+    transition: color 0.1s;
+}
+
+.addon-total.updated {
+    color: #F4991A !important;
+}

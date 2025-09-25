@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="itemsModal">
+        <!-- Items Modal -->
+        <div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" id="items-container">
+                <div class="modal-content">
+
+                    <!-- Modal Header (title only) -->
+                    <div class="modal-header justify-content-center">
+                        <h5 class="modal-title" id="itemsModalLabel">Select Flavor</h5>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="modal-body" id="itemsModalBody">
+                        <!-- JS will inject items here -->
+                    </div>
+
+                    <!-- Modal Footer (close button) -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger btn-lg w-100 fw-semibold rounded-3"
+                            data-bs-dismiss="modal">
+                            Close
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

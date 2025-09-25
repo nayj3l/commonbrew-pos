@@ -57,54 +57,49 @@ function loadVariants(button) {
         addToOrderBtn.style.display = "flex";
 
         // Display variant buttons
-        variants.forEach(variant => {
-            const wrapper = document.createElement("div");
-            wrapper.className = "d-flex justify-content-between align-items-center border rounded p-2 mb-2";
+        variants.forEach((variant) => {
+            const wrapperHTML = `
+                <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
+                    <!-- LEFT panel (variant name + price + controls) -->
+                    <div class="d-flex flex-column">
+                        <!-- Variant label (name + base price) -->
+                        <div>${variant.variantName} (₱${variant.price.toFixed(2)})</div>
+                        <!-- Controls row -->
+                        <div class="d-flex align-items-center mt-1">
+                            <button class="btn btn-sm btn-danger d-flex align-items-center 
+                                    justify-content-center btn-minus">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number"
+                                id="qty-${variant.variantId}"
+                                value="0"
+                                min="0"
+                                class="form-control form-control-sm text-center mx-2 qty-input"
+                                style="width:60px"
+                                data-variant-id="${variant.variantId}"
+                                data-variant-name="${variant.variantName}"
+                                data-price="${variant.price}"
+                                data-variant-ad="${variant.variantAd}">
+                            <button class="btn btn-sm btn-success d-flex align-items-center 
+                                    justify-content-center btn-plus">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- RIGHT panel (total price) -->
+                    <div class="fw-bold text-end variant-total">₱0.00</div>
+                </div>
+            `;
 
-            // LEFT panel (variant name + price + controls)
-            const leftPanel = document.createElement("div");
-            leftPanel.className = "d-flex flex-column";
+            // Append to modal body
+            modalBody.insertAdjacentHTML("beforeend", wrapperHTML);
 
-            // Variant label (name + base price)
-            const label = document.createElement("div");
-            label.textContent = `${variant.variantName} (₱${variant.price.toFixed(2)})`;
-
-            // Controls row
-            const controls = document.createElement("div");
-            controls.className = "d-flex align-items-center mt-1";
-
-            const minusBtn = document.createElement("button");
-            minusBtn.className = "btn btn-sm btn-danger d-flex align-items-center justify-content-center";
-            minusBtn.innerHTML = '<i class="bi bi-dash"></i>';
-
-            const qtyInput = document.createElement("input");
-            qtyInput.type = "number";
-            qtyInput.id = `qty-${variant.variantId}`;
-            qtyInput.value = 0;
-            qtyInput.min = 0;
-            qtyInput.className = "form-control form-control-sm text-center mx-2";
-            qtyInput.style.width = "60px";
-
-            qtyInput.dataset.variantId = variant.variantId;
-            qtyInput.dataset.variantName = variant.variantName;
-            qtyInput.dataset.price = variant.price;
-            qtyInput.dataset.variantAd = variant.variantAd;
-
-            const plusBtn = document.createElement("button");
-            plusBtn.className = "btn btn-sm btn-success d-flex align-items-center justify-content-center";
-            plusBtn.innerHTML = '<i class="bi bi-plus"></i>';
-
-            controls.appendChild(minusBtn);
-            controls.appendChild(qtyInput);
-            controls.appendChild(plusBtn);
-
-            leftPanel.appendChild(label);
-            leftPanel.appendChild(controls);
-
-            // RIGHT panel (total price)
-            const totalLabel = document.createElement("div");
-            totalLabel.className = "fw-bold text-end variant-total";
-            totalLabel.textContent = "₱0.00";
+            // Get the newly created elements
+            const wrapper = modalBody.lastElementChild;
+            const qtyInput = wrapper.querySelector('.qty-input');
+            const plusBtn = wrapper.querySelector('.btn-plus');
+            const minusBtn = wrapper.querySelector('.btn-minus');
+            const totalLabel = wrapper.querySelector('.variant-total');
 
             // Update function
             const updateTotal = () => {
@@ -113,6 +108,7 @@ function loadVariants(button) {
                 totalLabel.textContent = `₱${total.toFixed(2)}`;
             };
 
+            // Attach event listeners
             plusBtn.onclick = () => {
                 qtyInput.value = parseInt(qtyInput.value) + 1;
                 updateTotal();
@@ -127,11 +123,6 @@ function loadVariants(button) {
 
             qtyInput.addEventListener('change', updateTotal);
             qtyInput.addEventListener('input', updateTotal);
-
-            wrapper.appendChild(leftPanel);
-            wrapper.appendChild(totalLabel);
-
-            modalBody.appendChild(wrapper);
         });
 
         console.log('=== loadVariants END ===');

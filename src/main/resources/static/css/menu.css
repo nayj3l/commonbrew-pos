@@ -67,30 +67,6 @@
   transition: transform 0.3s;
 }
 
-.toggle-icon.collapsed {
-  transform: rotate(180deg);
-}
-
-/* Animation for smooth collapse/expand */
-.collapsible-section {
-  transition: max-height 0.3s ease-out, opacity 0.2s ease;
-  overflow: hidden;
-}
-
-/* Initially not collapsed */
-.categories-content {
-  /* max-height: 500px; */
-  opacity: 1;
-}
-
-/* Collapsed state */
-.categories-content.collapsed {
-  max-height: 0;
-  opacity: 0;
-  margin-bottom: 0;
-}
-
-
 /* Mobile-First Adjustments */
 @media (max-width: 576px) {
     /* .category-container .category-item .category-btn {

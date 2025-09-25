@@ -63,17 +63,9 @@
             /* color: var(--primary); */
         }
 
-        .toggle-icon.collapsed {
-            transform: rotate(180deg);
-        }
-
         .categories-content {
             margin-top: 12px;
             /* transition: var(--transition); */
-        }
-
-        .categories-content.collapsed {
-            display: none;
         }
 
         .category-grid {
@@ -385,6 +377,12 @@
             </div>
         </div>
 
+        <!-- Items Modal -->
+        <div th:replace="fragments/items-modal :: itemsModal"></div>
+
+        <!-- Variant + Addons Modal -->
+        <div th:replace="~{fragments/variant-addon-modal :: variantAddonModal}"></div>
+
         <!-- Current Order Section -->
         <div class="cart">
             <div class="d-flex justify-content-between align-items-center mt-4">
@@ -392,60 +390,6 @@
                 <button class="btn btn-success btn-lg" type="button" onclick="confirmOrder()">
                     Cart
                 </button>
-            </div>
-        </div>
-
-        <!-- Variant + Addons Selection Modal -->
-        <div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-
-                    <!-- Modal Header -->
-                    <div class="modal-header justify-content-center">
-                        <h5 class="modal-title" id="variantModalLabel">Select Variant & Addons</h5>
-                    </div>
-
-
-                    <!-- Modal Body -->
-                    <div class="modal-body">
-                        <!-- Variant Buttons -->
-                        <div id="variantModalBody" class="mb-4">
-                            <!-- JS will inject variant buttons here -->
-                        </div>
-
-                        <hr class="custom-hr">
-
-                        <!-- Addons Section -->
-                        <div id="addonOptions" class="addon-grid">
-                            <div class="p-1 text-center" th:each="addon : ${addons}">
-                                <div class="form-check card p-2 text-center addon-card"
-                                    style="border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:pointer;">
-                                    <input class="form-check-input position-static mx-auto" type="checkbox"
-                                        th:id="'addon-'+${addon.addonId}" th:value="${addon.addonId}"
-                                        th:data-addon-price="${addon.price}" onchange="updateSelectedAddons()" />
-                                    <label class="form-check-label d-block mt-2" th:for="'addon-'+${addon.addonId}">
-                                        <span th:text="${addon.addonName}">Addon Name</span>
-                                        <br>
-                                        <small class="text-muted"
-                                            th:text="'₱' + ${#numbers.formatDecimal(addon.price, 1, 2)}">₱0.00</small>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="modal-footer d-flex flex-column flex-md-row gap-2">
-                        <button type="button" class="btn btn-danger btn-lg w-100 fw-semibold rounded-3"
-                            data-bs-dismiss="modal">
-                            Close
-                        </button>
-                        <button type="button" class="btn btn-success w-100 w-md-auto" id="addVariantBtn"
-                            onclick="addVariantsWithAddons()">
-                            Add to Order
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -459,31 +403,6 @@
             <input type="hidden" name="addonNames" id="addonNames" />
             <input type="hidden" name="addonVariants" id="addonVariants" />
         </form>
-
-        <!-- Items Modal -->
-        <div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" id="items-container">
-                <div class="modal-content">
-                    <!-- Modal Header (title only) -->
-                    <div class="modal-header justify-content-center">
-                        <h5 class="modal-title" id="itemsModalLabel">Select Flavor</h5>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="modal-body" id="itemsModalBody">
-                        <!-- JS will inject items here -->
-                    </div>
-
-                    <!-- Modal Footer (close button) -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger btn-lg w-100 fw-semibold rounded-3"
-                            data-bs-dismiss="modal">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <script th:src="@{/js/order-state.js}"></script>
         <script th:src="@{/js/categories.js}"></script>
