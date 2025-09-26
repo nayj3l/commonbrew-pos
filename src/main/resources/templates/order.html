@@ -151,12 +151,6 @@
             }
         }
 
-        /* Modal adjustments */
-        #orderConfirmModal .modal-dialog {
-            max-width: 95%;
-            margin: 1.5rem auto;
-        }
-
         #orderConfirmModal .modal-content {
             border-radius: 16px;
             padding: 0;
@@ -194,24 +188,11 @@
             margin-bottom: 15px;
         }
 
-        /* Order summary items */
-        #modal-order-summary {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 50vh;
-            overflow-y: auto;
-            padding-right: 5px;
-            /* for scrollbar spacing */
-        }
-
         .modal-order-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* padding: 12px; */
             border-radius: 12px;
-            background: #f8f9fa;
             font-size: 16px;
             gap: 10px;
         }
@@ -228,52 +209,6 @@
             padding: 0;
             font-size: 18px;
             border-radius: 8px;
-        }
-
-        /* Total amount */
-        #orderConfirmModal .order-total {
-            font-size: 18px;
-            font-weight: 700;
-            margin-top: 15px;
-            padding: 12px;
-            text-align: center;
-            background: linear-gradient(135deg, #f0f7ff, #e1efff);
-            border-radius: 12px;
-        }
-
-        /* Footer buttons */
-        #orderConfirmModal .modal-footer {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 15px 20px;
-        }
-
-        #orderConfirmModal .modal-footer .btn {
-            font-size: 16px;
-            padding: 14px 0;
-            border-radius: 12px;
-            width: 100%;
-        }
-
-        #orderConfirmModal .btn-success {
-            background: linear-gradient(to right, var(--success), var(--primary));
-            color: white;
-        }
-
-        #orderConfirmModal .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-        }
-
-        #orderConfirmModal .btn-secondary {
-            background: white;
-            color: var(--gray);
-            border: 2px solid #e2e8f0;
-        }
-
-        #orderConfirmModal .btn-secondary:hover {
-            background: #f8f9fa;
         }
 
         /* Scrollbar styling for mobile */
@@ -413,25 +348,25 @@
         <!-- Order Confirmation Modal -->
         <div class="modal fade" id="orderConfirmModal" tabindex="-1" aria-labelledby="orderConfirmModalLabel"
             aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+            <div class="order-confirm-dialog modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="order-confirm-header modal-header justify-content-center">
                         <h5 class="modal-title" id="orderConfirmModalLabel">
                             Confirm Your Order
                         </h5>
                     </div>
-                    <div class="modal-body" id="variantModalBody">
-                        <h6>Order Details</h6>
+                    <div class="modal-body" id="order-details">
+                        <h6><em>Order Details</em></h6>
                         <div id="modal-order-summary"></div>
                         <div class="order-total mt-3">
                             Total: ₱<span id="modal-order-total">0.00</span>
                         </div>
                     </div>
                     <div class="modal-footer" id="variantModalFooter">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="order-cancel-btn btn btn-secondary" data-bs-dismiss="modal">
                             Cancel
                         </button>
-                        <button type="button" class="btn btn-success" onclick="submitConfirmedOrder()">
+                        <button type="button" class="order-confirm-btn btn btn-success" onclick="submitConfirmedOrder()">
                             Confirm Order
                         </button>
                     </div>

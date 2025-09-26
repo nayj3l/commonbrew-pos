@@ -89,7 +89,6 @@
   opacity: 0.45 !important;
 }
 
-
 #variantModalBody .btn:active {
     transform: translateY(0) scale(0.98); /* simulate press down */
     box-shadow: 0 2px 6px rgba(67, 97, 238, 0.2);
@@ -114,9 +113,9 @@
 
 /* Responsive adjustments */
 @media (max-width: 576px) {
-    .modal-dialog {
+    /* .modal-dialog {
         margin: 10px;
-    }
+    } */
 
     .variant-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -215,8 +214,6 @@
 }
 
 #variantModalBody > div:hover {
-  background-color: var(--primary-light);
-  color: white;
   box-shadow: var(--shadow);
 }
 
@@ -243,17 +240,6 @@
     justify-content: center;
 }
 
-/* #variantModal .btn-secondary {
-    background: white;
-    color: var(--gray);
-    border: 2px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 14px 20px;
-}
-
-#variantModal .btn-secondary:hover {
-    background: #f8f9fa;
-} */
 
 /* Make modal dialog full height */
 .modal-dialog {

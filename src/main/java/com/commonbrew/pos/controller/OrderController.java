@@ -192,7 +192,7 @@ public class OrderController {
         List<AddonConfirmSummary> addons = new ArrayList<>();
         if (addonIds != null) {
             for (int i = 0; i < addonIds.size(); i++) {
-                int itemId = itemIds.get(i);
+                int itemId = itemIds.get(0); // all addons belong to first item
                 int addonId = addonIds.get(i);
                 int quantity = addonQuantities.get(i);
 
