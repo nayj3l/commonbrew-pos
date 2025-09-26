@@ -160,19 +160,23 @@ public class OrderController {
 
     @PostMapping("/confirm")
     public String confirmOrder(
-            @RequestParam("itemsVariantsIds") List<Integer> itemsVariantsIds,
+            @RequestParam("itemIds") List<Integer> itemIds,
+            @RequestParam("variantsIds") List<Integer> variantsIds,
             @RequestParam("quantities") List<Integer> quantities,
-            @RequestParam(value = "addonItemIds", required = false) List<Integer> addonItemIds,
             @RequestParam(value = "addonIds", required = false) List<Integer> addonIds,
             @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
             Model model) {
                 
-        log.info("Received itemIds: {}", itemsVariantsIds);
+        log.info("Received itemIds : {}", itemIds );
+        log.info("Received variantsIds : {}", variantsIds );
         log.info("Received quantities: {}", quantities);
+        log.info("Received addonIds: {}", addonIds);
+        log.info("Received addonQuantities: {}", addonQuantities);
 
-        if (addonItemIds == null) {
-            addonItemIds = new ArrayList<>();
+        if (itemIds == null) {
+            itemIds = new ArrayList<>();
         }
+
         if (addonIds == null) {
             addonIds = new ArrayList<>();
         }
@@ -180,15 +184,15 @@ public class OrderController {
             addonQuantities = new ArrayList<>();
         }
 
-        if (itemsVariantsIds == null || quantities == null || itemsVariantsIds.size() != quantities.size()) {
+        if (variantsIds == null || quantities == null || variantsIds.size() != quantities.size()) {
             throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
         }
 
-        List<OrderConfirmSummary> items = orderService.buildOrderSummary(itemsVariantsIds, quantities);
+        List<OrderConfirmSummary> items = orderService.buildOrderSummary(variantsIds, quantities);
         List<AddonConfirmSummary> addons = new ArrayList<>();
         if (addonIds != null) {
             for (int i = 0; i < addonIds.size(); i++) {
-                int itemId = addonItemIds.get(i);
+                int itemId = itemIds.get(i);
                 int addonId = addonIds.get(i);
                 int quantity = addonQuantities.get(i);
 

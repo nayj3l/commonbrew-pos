@@ -17,26 +17,11 @@ function getSelectedVariants() {
     return selectedVariants;
 }
 
-function updateSelectedAddons() {
-    // store selected addons temporarily for the item being added
-    const selectedAddons = [];
-    document.querySelectorAll("#addonOptions input:checked").forEach(cb => {
-        selectedAddons.push({
-            addonId: parseInt(cb.value),
-            addonName: cb.nextElementSibling.querySelector("span").textContent,
-            price: parseFloat(cb.getAttribute("data-addon-price")),
-            quantity: 1
-        });
-    });
-    return selectedAddons;
-}
-
 // Main function to add variants to order
 function addVariantsWithAddons() {
     const selectedVariants = getSelectedVariants();
     const selectedAddons = updateSelectedAddons();
     
-    // Check if at least one variant has quantity > 0
     if (selectedVariants.length === 0) {
         alert("Please select a variant");
         return;
@@ -52,28 +37,28 @@ function addVariantsWithAddons() {
         if (existingIndex >= 0) {
             // Update existing variant quantity
             currentOrder.items[existingIndex].quantity += variant.quantity;
-            
-            // Merge addons
-            selectedAddons.forEach(sa => {
-                const existingAddon = currentOrder.items[existingIndex].addons.find(a => a.addonId === sa.addonId);
-                if (existingAddon) {
-                    existingAddon.quantity += sa.quantity;
-                } else {
-                    currentOrder.items[existingIndex].addons.push({...sa});
-                }
-            });
         } else {
-            // Add new variant with addons
             currentOrder.items.push({
                 itemId: variant.variantId,
                 itemName: `${selectedItemName} (${variant.variantName})`,
                 itemPrice: variant.price,
                 quantity: variant.quantity,
-                addons: selectedAddons.map(addon => ({...addon})) // Clone addons
+                addons: []
             });
         }
     });
-    
+
+    // Add addons globally (once)
+    selectedAddons.forEach(sa => {
+        const existingAddon = currentOrder.addons.find(a => a.addonId === sa.addonId);
+        if (existingAddon) {
+            existingAddon.quantity += sa.quantity;
+        } else {
+            currentOrder.addons.push({...sa});
+        }
+    });
+
+
     calculateTotal();
     renderModalOrder();
     
@@ -82,18 +67,34 @@ function addVariantsWithAddons() {
 }
 
 function resetSelections() {
-    // Reset quantity inputs
+    // ✅ Reset variant quantity inputs
     document.querySelectorAll('#variantQuantities input[type="number"]').forEach(input => {
         input.value = 0;
     });
     
-    // Reset addon checkboxes
+    // ✅ Reset addon checkboxes
     document.querySelectorAll("#addonOptions input[type=checkbox]").forEach(cb => {
         cb.checked = false;
     });
-    
-    currentItemName = "";
+
+    // ✅ Reset addon qty inputs
+    document.querySelectorAll(".addon-qty").forEach(input => {
+        input.value = 0;
+    });
+
+    // ✅ Reset addon totals
+    document.querySelectorAll(".addon-total").forEach(totalDisplay => {
+        totalDisplay.textContent = "₱0.00";
+    });
+
+    // ✅ Collapse addons if open
+    const addonContainer = document.getElementById("addonOptions");
+    if (!addonContainer.classList.contains("collapsed")) {
+        toggleAddons();
+    }
+
 }
+
 
 // Add event listener to the parent container that holds all addon cards
 document.addEventListener('click', function(e) {
@@ -164,20 +165,21 @@ function updateAddonTotal(qtyInput, price, totalDisplay) {
     totalDisplay.textContent = `₱${total.toFixed(2)}`;
 }
 
-// Update your updateSelectedAddons function to include quantities
 function updateSelectedAddons() {
     const selectedAddons = [];
     document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
         const addonCard = checkbox.closest('.addon-card');
         const qtyInput = addonCard.querySelector('.addon-qty');
         selectedAddons.push({
-            addonId: checkbox.value,
-            quantity: parseInt(qtyInput.value),
+            addonId: parseInt(checkbox.value),
+            addonName: addonCard.querySelector("span").textContent, // ⬅️ here
+            quantity: parseInt(qtyInput.value) || 0,
             price: parseFloat(checkbox.dataset.addonPrice)
         });
     });
     
     console.log('Selected addons:', selectedAddons);
+    return selectedAddons;
 }
 
 function toggleAddons() {

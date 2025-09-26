@@ -76,6 +76,7 @@ function loadVariants(button) {
                                 min="0"
                                 class="form-control form-control-sm text-center mx-2 qty-input"
                                 style="width:60px"
+                                data-item-id="${itemId}"
                                 data-variant-id="${variant.variantId}"
                                 data-variant-name="${variant.variantName}"
                                 data-price="${variant.price}"
@@ -142,10 +143,11 @@ function getSelectedVariants() {
         const quantity = parseInt(input.value);
         if (quantity > 0) {
             selectedVariants.push({
-                variantId: input.getAttribute('data-variant-id'),
-                variantName: input.getAttribute('data-variant-name'),
-                price: parseFloat(input.getAttribute('data-price')),
-                quantity: quantity
+                itemId: input.dataset.itemId,
+                variantId: input.dataset.variantId,
+                variantName: input.dataset.variantName,
+                price: parseFloat(input.dataset.price),
+                quantity: quantity,
             });
         }
     });
@@ -153,29 +155,31 @@ function getSelectedVariants() {
     return selectedVariants;
 }
 
-function updateAddons() {
-    currentOrder.addons = [];
+function updateAddons(itemId) {
+    if (!itemId) return;
+
+    // Reset addons array for this item only
+    const item = currentOrder.items.find(i => i.itemId == itemId);
+    if (!item) return;
+    item.addons = [];
 
     document
-        .querySelectorAll(".addon-checkbox:checked")
+        .querySelectorAll(`.addon-checkbox[data-item-id="${itemId}"]:checked`)
         .forEach((checkbox) => {
             const addonId = checkbox.value;
             const addonName = checkbox.getAttribute("data-addon-name");
-            const addonPrice = parseFloat(
-                checkbox.getAttribute("data-addon-price")
-            );
+            const addonPrice = parseFloat(checkbox.getAttribute("data-addon-price"));
 
-            const existing = currentOrder.addons.find(
-                (a) => a.addonId == addonId
-            );
+            const existing = item.addons.find(a => a.addonId == addonId);
             if (existing) {
                 existing.quantity += 1;
             } else {
-                currentOrder.addons.push({
+                item.addons.push({
                     addonId,
                     addonName,
                     price: addonPrice,
                     quantity: 1,
+                    itemId: itemId
                 });
             }
         });

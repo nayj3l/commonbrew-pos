@@ -395,13 +395,11 @@
 
         <!-- Hidden form for submission -->
         <form id="order-form" method="post" th:action="@{/order/confirm}">
-            <input type="hidden" name="itemsVariantsIds" id="itemsVariantsIds" />
+            <input type="hidden" name="itemIds" id="itemIds" /> 
+            <input type="hidden" name="variantsIds" id="variantsIds" />
             <input type="hidden" name="quantities" id="quantities" />
             <input type="hidden" name="addonIds" id="addonIds" />
             <input type="hidden" name="addonQuantities" id="addonQuantities" />
-            <input type="hidden" name="addonItemIds" id="addonItemIds" />
-            <input type="hidden" name="addonNames" id="addonNames" />
-            <input type="hidden" name="addonVariants" id="addonVariants" />
         </form>
 
         <script th:src="@{/js/order-state.js}"></script>

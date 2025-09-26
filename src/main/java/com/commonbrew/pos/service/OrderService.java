@@ -112,13 +112,13 @@ if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != nu
     }
 
     public List<OrderConfirmSummary> buildOrderSummary(
-            List<Integer> itemsVariantsIds,
+            List<Integer> variantsIds,
             List<Integer> quantities
     ) {
         List<OrderConfirmSummary> summaries = new ArrayList<>();
 
-        for (int i = 0; i < itemsVariantsIds.size(); i++) {
-            Long variantId = Long.valueOf(itemsVariantsIds.get(i));
+        for (int i = 0; i < variantsIds.size(); i++) {
+            Long variantId = Long.valueOf(variantsIds.get(i));
             int quantity = quantities.get(i);
 
             ItemVariant itemVariant = variantRepository.getReferenceById(variantId);
