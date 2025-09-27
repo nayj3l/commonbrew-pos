@@ -17,7 +17,7 @@ function calculateTotal() {
     currentOrder.total = total;
     
     document.getElementById("order-total").textContent =
-        currentOrder.total.toFixed(2);
+        `₱${currentOrder.total.toFixed(2)}`;
     return total;
 }
 
