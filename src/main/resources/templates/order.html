@@ -267,7 +267,14 @@
             <div class="categories-content" id="categories-container">
                 <div class="category-grid">
                     <div th:each="menu : ${menu}" class="category-item">
-                        <a class="category-btn" th:text="${menu.name}" th:onclick="'loadItems(' + ${menu.id} + ')'">
+                        <a class="category-btn" 
+                        th:text="${menu.name}" 
+                        th:onclick="'loadItems(' + ${menu.id} + ')'"
+                        th:style="${menu.imageUrl != null} ? 
+                            'background-image: url(\'' + ${menu.imageUrl} + '\') !important; 
+                                background-size: cover !important; 
+                                background-position: center !important; 
+                                background-repeat: no-repeat !important;' : ''">
                             <div class="category-icon">
                                 <i class="fas fa-mug-hot"></i>
                             </div>
