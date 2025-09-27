@@ -42,4 +42,19 @@ public class Menu {
     @JsonIgnore
     private List<Addon> addons;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Menu)) return false;
+        return id != null && id.equals(((Menu) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
 }

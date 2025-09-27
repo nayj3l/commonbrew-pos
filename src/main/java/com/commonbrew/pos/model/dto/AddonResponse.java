@@ -1,5 +1,7 @@
 package com.commonbrew.pos.model.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,4 +15,5 @@ public class AddonResponse {
     private Long addonId;
     private String addonName;
     private Double price;
+    private List<MenuResponse> menu;
 }

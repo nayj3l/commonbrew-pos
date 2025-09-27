@@ -1,12 +1,15 @@
 package com.commonbrew.pos.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.commonbrew.pos.mapper.MenuMapper;
 import com.commonbrew.pos.model.Menu;
+import com.commonbrew.pos.model.dto.MenuResponse;
 import com.commonbrew.pos.repository.MenuRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -16,10 +19,19 @@ import lombok.RequiredArgsConstructor;
 public class MenuService {
 
     private final MenuRepository menuRepository;
+    private final MenuMapper menuMapper;
 
     @Cacheable("menus")
     public List<Menu> getAllMenu() {
         return menuRepository.findByActiveTrue();
+    }
+
+    @Cacheable("menuResponses")
+    public List<MenuResponse> getMenuApiResponse() {
+        List<Menu> menus = menuRepository.findAll();
+        return menus.stream()
+                .map(menuMapper::toResponse)
+                .toList();
     }
 
     @Cacheable(value = "menu", key = "#id")

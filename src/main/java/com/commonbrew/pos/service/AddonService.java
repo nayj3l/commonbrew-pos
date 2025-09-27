@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.dto.AddonResponse;
+import com.commonbrew.pos.model.dto.MenuResponse;
 import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 
@@ -31,6 +32,7 @@ public class AddonService {
                 .map(this::mapToAddonResponse)
                 .toList();
     }
+
     @Cacheable(value = "addon", key = "#id")
     public Addon getAddonById(Long id) {
         Addon addon = addonRepository.findById(id).orElse(null);
@@ -59,6 +61,17 @@ public class AddonService {
                 .addonId(addon.getAddonId())
                 .addonName(addon.getAddonName())
                 .price(addon.getPrice())
+                .menu(
+                    addon.getMenu().stream()
+                        .map(m -> MenuResponse.builder()
+                                .id(m.getId())
+                                .code(m.getCode())
+                                .name(m.getName())
+                                .active(m.isActive())
+                                .build()
+                        )
+                        .toList()
+                )
                 .build();
     }
 }
