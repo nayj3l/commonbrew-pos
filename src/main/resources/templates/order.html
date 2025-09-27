@@ -51,16 +51,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 16px;
-            /* background: white; */
-            /* border-radius: var(--border-radius); */
-            /* box-shadow: var(--shadow); */
-            cursor: pointer;
         }
 
         .toggle-icon {
             font-size: 16px;
-            /* transition: var(--transition); */
-            /* color: var(--primary); */
         }
 
         .categories-content {
@@ -237,31 +231,27 @@
 </head>
 
 <body>
+
     <!-- Page Header -->
-    <div
-        class="app-header d-flex justify-content-between align-items-center p-3 mb-4 shadow-sm rounded bg-white flex-wrap">
+    <div class="app-header d-flex justify-content-between align-items-center p-3 shadow-sm rounded flex-wrap header-bg">
         <!-- Left: Dashboard -->
-        <a href="/" class="btn btn-primary d-flex align-items-center gap-2 mb-2 mb-md-0 px-4 py-2">
+        <a href="/" class="header-btn d-flex align-items-center gap-2 mb-2 mb-md-0">
             <i class="bi bi-house-fill"></i>
             Dashboard
         </a>
 
-        <a href="/order/history" class="btn btn-outline-primary d-flex align-items-center gap-2 mb-2 mb-md-0 px-4 py-2">
+        <!-- Right: See All Orders -->
+        <a href="/order/history" class="header-btn-outline d-flex align-items-center gap-2 mb-2 mb-md-0">
             <i class="bi bi-card-list"></i>
             See All Orders
         </a>
     </div>
 
-    <!-- Order Section -->
-    <div class="order container mt-4" id="orderContainer">
-        <div class="card p-4 shadow-sm rounded">
-            <h1 class="text-center mb-4 fw-bold">Place Order</h1>
 
-            <!-- Menu Section -->
-            <div class="section-title" onclick="toggleCategories()">
-                <span>Menu Categories</span>
-                <span class="toggle-icon" id="categories-toggle">▼</span>
-            </div>
+    <!-- Order Section -->
+    <div class="order" id="orderContainer">
+        <div class="card p-4 shadow-sm rounded">
+            <h1 class="text-center mb-4 fw-bold">Menu</h1>
 
             <!-- Menu List -->
             <div class="categories-content" id="categories-container">
@@ -292,13 +282,10 @@
         <div th:replace="~{fragments/variant-addon-modal :: variantAddonModal}"></div>
 
         <!-- Current Order Section -->
-        <div class="cart">
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <span class="order-total">Total: ₱<span id="order-total">0.00</span></span>
-                <button class="btn btn-success btn-lg" type="button" onclick="confirmOrder()">
-                    Cart
-                </button>
-            </div>
+        <div class="cart-container">
+            <button class="cart-btn" type="button" onclick="confirmOrder()">
+                Amount ₱<span id="order-total">0.00</span>
+            </button>
         </div>
 
         <!-- Hidden form for submission -->
