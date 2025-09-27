@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
+import com.commonbrew.pos.model.dto.MenuResponse;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
 
@@ -27,7 +28,7 @@ public class MenuController {
 
     @GetMapping()
     public String showMenu(Model model) {
-        List<Menu> menu = menuService.getAllMenu();
+        List<MenuResponse> menu = menuService.getAllMenu();
         model.addAttribute("menu", menu);
         return "menu";
     }

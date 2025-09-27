@@ -36,6 +36,7 @@ public class Menu {
     private boolean active = true;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<MenuItem> items;
 
     @ManyToMany(mappedBy = "menu")

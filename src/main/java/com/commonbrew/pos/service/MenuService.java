@@ -1,15 +1,20 @@
 package com.commonbrew.pos.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.commonbrew.pos.mapper.MenuMapper;
+import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.dto.MenuResponse;
+import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,14 +24,24 @@ import lombok.RequiredArgsConstructor;
 public class MenuService {
 
     private final MenuRepository menuRepository;
+    private final AddonRepository addonRepository;
     private final MenuMapper menuMapper;
 
     @Cacheable("menus")
-    public List<Menu> getAllMenu() {
-        return menuRepository.findByActiveTrue();
+    public List<MenuResponse> getAllMenu() {
+        List<Menu> menus = menuRepository.findAllActiveMenusWithItems();
+
+        if (menus.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        initializeMenuAddons(menus);
+        
+        return menus.stream()
+                .map(menuMapper::toResponse)
+                .toList();
     }
 
-    @Cacheable("menuResponses")
     public List<MenuResponse> getMenuApiResponse() {
         List<Menu> menus = menuRepository.findAll();
         return menus.stream()
@@ -79,5 +94,30 @@ public class MenuService {
         menu.setActive(false);
         menuRepository.save(menu);
     }
+    
+    private void initializeMenuAddons(List<Menu> menus) {
+        List<Addon> addons = addonRepository.findAddonsByMenus(menus);
+        Map<Long, List<Addon>> addonsByMenuId = new HashMap<>();
+
+        for (Addon addon : addons) {
+            if (addon.getMenu() == null) continue;
+            for (Menu menu : addon.getMenu()) {
+                if (menu == null || menu.getId() == null) continue;
+                addonsByMenuId
+                    .computeIfAbsent(menu.getId(), k -> new ArrayList<>())
+                    .add(addon);
+            }
+        }
+
+        for (Menu menu : menus) {
+            List<Addon> menuAddons = addonsByMenuId.get(menu.getId());
+            if (menuAddons != null) {
+                menu.setAddons(menuAddons);
+            } else {
+                menu.setAddons(Collections.emptyList());
+            }
+        }
+    }
+
 
 }

@@ -21,7 +21,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.commonbrew.pos.constants.PaymentOption;
 import com.commonbrew.pos.model.Addon;
-import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.dto.AddonConfirmSummary;
@@ -30,6 +29,7 @@ import com.commonbrew.pos.model.dto.ItemVariantDto;
 import com.commonbrew.pos.model.dto.ItemVariantResponse;
 import com.commonbrew.pos.model.dto.MenuItemDto;
 import com.commonbrew.pos.model.dto.MenuItemResponse;
+import com.commonbrew.pos.model.dto.MenuResponse;
 import com.commonbrew.pos.model.dto.OrderConfirmSummary;
 import com.commonbrew.pos.model.dto.OrderConfirmSummaryResponse;
 import com.commonbrew.pos.service.AddonService;
@@ -55,7 +55,7 @@ public class OrderController {
 
     @GetMapping
     public String showOrderPage(Model model) {
-        List<Menu> menu = menuService.getAllMenu();
+        List<MenuResponse> menu = menuService.getAllMenu();
         List<MenuItemResponse> menuItems = itemService.getAllItems();
         List<AddonResponse> addons = addonService.getAllAddons();
         List<ItemVariantResponse> variants = itemVariantService.getAllVariants();
