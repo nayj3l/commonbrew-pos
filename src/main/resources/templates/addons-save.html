@@ -164,7 +164,7 @@
                         <option th:each="menu : ${allMenus}" 
                                 th:value="${menu.id}"
                                 th:text="${menu.name}"
-                                th:selected="${addon.menu != null} ? ${addon.menu.contains(menu)} : false">
+                                th:selected="${addon.menu.contains(menu)}">
                         </option>
                     </select>
                 </div>
