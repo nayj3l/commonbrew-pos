@@ -1,11 +1,14 @@
 package com.commonbrew.pos.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +24,11 @@ import com.commonbrew.pos.repository.ItemVariantRepository;
 import com.commonbrew.pos.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -72,32 +77,30 @@ public class OrderService {
             totalAmount += orderItem.getSubtotal();
 
             // Handle optional addons for this variant
-            // Handle optional addons for this variant
-if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != null) {
-    List<Long> addonIds = addonIdsList.get(i);
-    List<Integer> addonQuantities = addonQuantitiesList.get(i);
+            if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != null) {
+                List<Long> addonIds = addonIdsList.get(i);
+                List<Integer> addonQuantities = addonQuantitiesList.get(i);
 
-    for (int j = 0; j < addonIds.size(); j++) {
-        Long addonId = addonIds.get(j);
-        Integer addonQty = addonQuantities.get(j);
+                for (int j = 0; j < addonIds.size(); j++) {
+                    Long addonId = addonIds.get(j);
+                    Integer addonQty = addonQuantities.get(j);
 
-        Addon addon = addonRepository.findById(addonId)
-                .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
+                    Addon addon = addonRepository.findById(addonId)
+                            .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
 
-        OrderItem addonItem = new OrderItem();
-        addonItem.setVariant(variant);
-        addonItem.setQuantity(addonQty);
-        addonItem.setVariantNameSnapshot(addon.getAddonName());
-        addonItem.setUnitPriceSnapshot(addon.getPrice());
-        addonItem.setMenuItemNameSnapshot("Addon");
-        addonItem.setSubtotal(addon.getPrice() * addonQty);
-        addonItem.setOrder(order);
+                    OrderItem addonItem = new OrderItem();
+                    addonItem.setVariant(variant);
+                    addonItem.setQuantity(addonQty);
+                    addonItem.setVariantNameSnapshot(addon.getAddonName());
+                    addonItem.setUnitPriceSnapshot(addon.getPrice());
+                    addonItem.setMenuItemNameSnapshot("Addon");
+                    addonItem.setSubtotal(addon.getPrice() * addonQty);
+                    addonItem.setOrder(order);
 
-        orderItems.add(addonItem);
-        totalAmount += addonItem.getSubtotal();
-    }
-}
-
+                    orderItems.add(addonItem);
+                    totalAmount += addonItem.getSubtotal();
+                }
+            }
         }
 
         order.setTotalAmount(totalAmount);
@@ -106,9 +109,35 @@ if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != nu
         return orderRepository.save(order);
     }
 
-
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
+    }
+
+    public List<Order> getOrdersBetween(LocalDateTime from, LocalDateTime to) {
+        return orderRepository.findByOrderTimeBetweenOrderByOrderTimeDesc(from, to);
+    }
+
+    public List<Order> getOrdersForToday() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime from = today.atStartOfDay();
+        LocalDateTime to   = today.atTime(LocalTime.MAX);
+        return getOrdersBetween(from, to);
+    }
+
+    public List<Order> getOrdersByDateRange(LocalDate fromDate, LocalDate toDate) {
+        LocalDateTime startDateTime = fromDate.atStartOfDay();
+        LocalDateTime endDateTime = toDate.atTime(LocalTime.MAX);
+        
+        log.info("Converting date range to LocalDateTime:");
+        log.info("fromDate: {} -> startDateTime: {}", fromDate, startDateTime);
+        log.info("toDate: {} -> endDateTime: {}", toDate, endDateTime);
+        log.info("Querying database for orders between {} and {}", startDateTime, endDateTime);
+
+        List<Order> orders = orderRepository.findByOrderTimeBetweenOrderByOrderTimeDesc(startDateTime, endDateTime);
+        
+        log.info("Retrieved {} orders from database", orders.size());
+        
+        return orders;
     }
 
     public List<OrderConfirmSummary> buildOrderSummary(
@@ -148,8 +177,8 @@ if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != nu
     }
 
     public Addon getAddonById(Long addonId) {
-    return addonRepository.findById(addonId)
-        .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
-}
+        return addonRepository.findById(addonId)
+            .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
+    }
 
 }

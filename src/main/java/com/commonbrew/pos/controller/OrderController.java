@@ -1,10 +1,14 @@
 package com.commonbrew.pos.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -218,14 +222,42 @@ public class OrderController {
         return "order-confirm";
     }
 
+    // @GetMapping("/history")
+    // public String showOrderHistory(Model model) {
+    //     List<Order> orders = orderService.getAllOrders()
+    //                                     .stream()
+    //                                     .sorted((o1, o2) -> o2.getOrderTime().compareTo(o1.getOrderTime()))
+    //                                     .toList(); // descending by orderTime
+    //     log.info("Found {} orders", orders);
+    //     model.addAttribute("orders", orders);
+    //     return "order-history";
+    // }
+
     @GetMapping("/history")
-    public String showOrderHistory(Model model) {
-        List<Order> orders = orderService.getAllOrders()
-                                        .stream()
-                                        .sorted((o1, o2) -> o2.getOrderTime().compareTo(o1.getOrderTime()))
-                                        .toList(); // descending by orderTime
+    public String showOrderHistory(
+            @RequestParam(value = "from", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+
+            @RequestParam(value = "to", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+
+            Model model) {
+
+            List<Order> orders;
+
+            if (fromDate != null && toDate != null) {
+                LocalDateTime from = fromDate.atStartOfDay();
+                LocalDateTime to   = toDate.atTime(LocalTime.MAX);
+                orders = orderService.getOrdersBetween(from, to);
+            } else {
+                orders = orderService.getOrdersForToday();
+            }
+
+
         model.addAttribute("orders", orders);
+        model.addAttribute("from", fromDate);
+        model.addAttribute("to", toDate);
+
         return "order-history";
     }
-
 }

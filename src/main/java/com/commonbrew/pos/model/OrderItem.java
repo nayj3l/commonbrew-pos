@@ -10,11 +10,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "order_item")
 @Data
 @NoArgsConstructor
+@ToString(exclude = "order") 
 public class OrderItem {
 
     @Id
