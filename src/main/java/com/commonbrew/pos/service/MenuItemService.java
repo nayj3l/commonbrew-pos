@@ -6,14 +6,14 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.commonbrew.pos.dto.AddonResponse;
+import com.commonbrew.pos.dto.MenuItemResponse;
 import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
-import com.commonbrew.pos.model.dto.AddonResponse;
-import com.commonbrew.pos.model.dto.ItemVariantResponse;
-import com.commonbrew.pos.model.dto.MenuItemResponse;
 import com.commonbrew.pos.repository.MenuItemRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,7 +25,7 @@ public class MenuItemService {
 
     @Cacheable("menuItems")
     public List<MenuItemResponse> getAllItems() {
-        return itemRepository.findAllWithVariants()
+        return itemRepository.findAllActive()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -33,37 +33,27 @@ public class MenuItemService {
 
     @Cacheable(value = "menuItemsByMenu", key = "#menuId")
     public List<MenuItem> getMenuItemsByMenuId(Long menuId) {
-        return itemRepository.findByMenuIdWithVariants(menuId);
+        return itemRepository.findByMenuId(menuId);
     }
-    
+
     @Cacheable(value = "menuItem", key = "#id")
     public MenuItem getItemById(Long id) {
-        return itemRepository.findByIdWithVariants(id).orElse(null);
+        return itemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("MenuItem not found with id " + id));
     }
 
     @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
-    public MenuItem saveItem(Long menuId, MenuItem item) {
-        // Load the managed Menu entity
+    public MenuItem saveItem(Long menuId, MenuItem menuItem) {
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid menu ID: " + menuId));
 
-        // Always set the managed menu, don't rely on bound object
-        item.setMenu(menu);
+        menuItem.setMenu(menu);
 
-        // Ensure new items have null id to prevent overwriting
-        if (item.getId() != null && !itemRepository.existsById(item.getId())) {
-            item.setId(null);
+        if (menuItem.getId() != null && !itemRepository.existsById(menuItem.getId())) {
+            menuItem.setId(null);
         }
 
-        // Remove variants that are null or empty
-        if (item.getVariants() != null) {
-            item.getVariants().removeIf(v -> v.getVariantName() == null || v.getVariantName().isEmpty());
-
-            // **Important:** link each variant to its parent
-            item.getVariants().forEach(v -> v.setMenuItem(item));
-        }
-
-        return itemRepository.save(item);
+        return itemRepository.save(menuItem);
     }
 
     @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
@@ -72,10 +62,6 @@ public class MenuItemService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item ID: " + id));
 
         item.setActive(false);
-        if (item.getVariants() != null) {
-            item.getVariants().forEach(v -> v.setActive(false));
-        }
-
         itemRepository.save(item);
     }
 
@@ -85,18 +71,6 @@ public class MenuItemService {
                 .name(menuItem.getName())
                 .active(menuItem.isActive())
                 .menuId(menuItem.getMenu() != null ? menuItem.getMenu().getId() : null)
-                .variants(
-                        menuItem.getVariants().stream()
-                                .map(variant -> ItemVariantResponse.builder()
-                                        .variantId(variant.getVariantId())
-                                        .variantName(variant.getVariantName())
-                                        .price(variant.getPrice())
-                                        .code(variant.getCode())
-                                        .active(variant.isActive())
-                                        .build()
-                                )
-                                .toList()
-                )
                 .addons(
                         menuItem.getMenu().getAddons().stream()
                                 .map(addon -> AddonResponse.builder()

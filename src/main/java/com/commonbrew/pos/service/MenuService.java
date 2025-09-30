@@ -9,11 +9,12 @@ import java.util.Map;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.commonbrew.pos.dto.MenuResponse;
 import com.commonbrew.pos.mapper.MenuMapper;
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
-import com.commonbrew.pos.model.dto.MenuResponse;
 import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 
@@ -29,7 +30,7 @@ public class MenuService {
 
     @Cacheable("menus")
     public List<MenuResponse> getAllMenu() {
-        List<Menu> menus = menuRepository.findAllActiveMenusWithItems();
+        List<Menu> menus = menuRepository.findAllActiveMenus();
 
         if (menus.isEmpty()) {
             return Collections.emptyList();
@@ -50,10 +51,21 @@ public class MenuService {
     }
 
     @Cacheable(value = "menu", key = "#id")
-    public Menu getMenuById(Long id) {
-        return menuRepository.findById(id)
+    public MenuResponse getMenuById(Long id) {
+        Menu menu = menuRepository.findById(id)
                 .filter(Menu::isActive)
                 .orElseThrow(() -> new RuntimeException("Menu not found with id " + id));
+
+        return menuMapper.toResponse(menu);
+    }
+
+    @Transactional(readOnly = true)
+    public Menu getActiveMenuById(Long id) {
+        Menu menu = menuRepository.findByIdAndActiveTrue(id)
+            .orElseThrow(() -> new RuntimeException("Menu not found"));
+        menu.getItems().size();
+        menu.getVariants().size();
+        return menu;
     }
 
     @CacheEvict(value = {"menus", "menu"}, allEntries = true)
@@ -118,6 +130,5 @@ public class MenuService {
             }
         }
     }
-
 
 }

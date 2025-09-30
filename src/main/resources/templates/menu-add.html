@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +36,7 @@
 
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             animation: fadeIn 0.5s ease-out;
         }
 
@@ -83,6 +84,30 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
         }
 
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+        }
+
+        .form-control.is-valid {
+            border-color: #198754;
+            box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15);
+        }
+
+        .invalid-feedback {
+            display: none;
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+
+        .valid-feedback {
+            display: none;
+            color: #198754;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+
         .btn {
             border-radius: 10px;
             padding: 10px 20px;
@@ -96,10 +121,15 @@
             color: white;
         }
 
-        .btn-success:hover {
+        .btn-success:hover:not(:disabled) {
             background: linear-gradient(to right, var(--primary-light), var(--primary));
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-success:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
         }
 
         .btn-secondary {
@@ -114,6 +144,16 @@
             transform: translateY(-2px);
         }
 
+        .btn-outline-primary {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
         .button-group {
             display: flex;
             gap: 12px;
@@ -124,6 +164,60 @@
             flex: 1;
         }
 
+        .variant-row {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .price-input-group {
+            position: relative;
+        }
+
+        .price-input-group::before {
+            content: "₱";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-weight: 600;
+            z-index: 3;
+        }
+
+        .price-input {
+            padding-left: 30px !important;
+        }
+
+        .existing-variant {
+            background: #e8f5e8;
+            border-left: 4px solid #28a745;
+        }
+
+        .new-variant {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .variant-badge {
+            font-size: 0.75em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+
+        .badge-existing {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-new {
+            background: #ffc107;
+            color: black;
+        }
+
         @media (max-width: 576px) {
             .button-group {
                 flex-direction: column;
@@ -131,11 +225,34 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="card">
@@ -147,12 +264,63 @@
             <form th:action="@{/menu/add}" th:object="${menu}" method="post" id="menuForm">
                 <div class="mb-4">
                     <label class="form-label">Menu Name</label>
-                    <input type="text" th:field="*{name}" class="form-control" placeholder="Enter menu name" required>
+                    <input type="text" th:field="*{name}" class="form-control" id="menuName" 
+                           placeholder="Enter menu name" required
+                           oninput="checkMenuName(this.value)"
+                            autocomplete="off">
+                    <div class="invalid-feedback" id="menuNameError">
+                        This menu name already exists. Please choose a different name.
+                    </div>
+                    <div class="valid-feedback" id="menuNameSuccess">
+                        Menu name is available.
+                    </div>
+                    <div class="loading-spinner" id="menuNameLoading"></div>
+                </div>
+
+                <!-- Variants Section -->
+                <div class="mb-4">
+                    <label class="form-label">Add Variants</label>
+                    
+                    <!-- Variant Search and Add -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input type="text" id="variantSearch" list="variant-options" class="form-control" 
+                                   placeholder="Search existing variants or type new name"
+                                    autocomplete="off">
+                            <datalist id="variant-options">
+                                <option th:each="variant : ${allVariants}" 
+                                        th:value="${variant.variantName}"
+                                        th:data-price="${variant.price}">
+                                    [[${variant.variantName}]] - ₱[[${#numbers.formatDecimal(variant.price, 1, 2)}]]
+                                </option>
+                            </datalist>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="price-input-group">
+                                <input type="number" id="variantPrice" class="form-control price-input" 
+                                       placeholder="Price" step="1" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addVariant()">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Selected Variants Display -->
+                    <div id="variantsContainer" class="mb-3">
+                        <div class="text-muted text-center py-3">No variants added yet</div>
+                    </div>
+
+                    <!-- Hidden inputs to store variant data -->
+                    <input type="hidden" id="variantNames" name="variantNames">
+                    <input type="hidden" id="variantPrices" name="variantPrices">
                 </div>
 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-success">
-                        <span class="submit-text">Save</span>
+                    <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                        Save Menu
                     </button>
                     <a href="/menu" class="btn btn-secondary">Cancel</a>
                 </div>
@@ -161,5 +329,214 @@
 
         <p class="text-center text-muted mt-3">© 2025 CommonBrew Batasan Hills</p>
     </div>
+
+    <script th:inline="javascript">
+        // Get existing menu names from Thymeleaf
+        const existingMenuNames = /*[[${existingMenuNames}]]*/ [];
+        
+        let variants = [];
+        const existingVariants = new Map();
+        let isMenuNameValid = false;
+
+        // Initialize existing variants from datalist
+        document.addEventListener('DOMContentLoaded', function() {
+            const options = document.querySelectorAll('#variant-options option');
+            options.forEach(option => {
+                existingVariants.set(option.value.toLowerCase(), {
+                    name: option.value,
+                    price: parseFloat(option.getAttribute('data-price')) || 0.00,
+                    isExisting: true
+                });
+            });
+            
+            // Initialize form state
+            updateSubmitButton();
+        });
+
+        function checkMenuName(menuName) {
+            const menuNameInput = document.getElementById('menuName');
+            const errorDiv = document.getElementById('menuNameError');
+            const successDiv = document.getElementById('menuNameSuccess');
+            const loadingDiv = document.getElementById('menuNameLoading');
+            
+            if (!menuName || menuName.trim().length < 2) {
+                // Reset validation for short inputs
+                menuNameInput.classList.remove('is-invalid', 'is-valid');
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+                loadingDiv.style.display = 'none';
+                isMenuNameValid = false;
+                updateSubmitButton();
+                return;
+            }
+            
+            // Show loading
+            loadingDiv.style.display = 'inline-block';
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Simulate API call delay (you can replace this with actual API call)
+            setTimeout(() => {
+                const normalizedMenuName = menuName.trim().toLowerCase();
+                const exists = existingMenuNames.some(name => 
+                    name.toLowerCase() === normalizedMenuName
+                );
+                
+                loadingDiv.style.display = 'none';
+                
+                if (exists) {
+                    menuNameInput.classList.remove('is-valid');
+                    menuNameInput.classList.add('is-invalid');
+                    errorDiv.style.display = 'block';
+                    isMenuNameValid = false;
+                } else {
+                    menuNameInput.classList.remove('is-invalid');
+                    menuNameInput.classList.add('is-valid');
+                    successDiv.style.display = 'block';
+                    isMenuNameValid = true;
+                }
+                
+                updateSubmitButton();
+            }, 500);
+        }
+
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            const hasVariants = variants.length > 0;
+            
+            if (isMenuNameValid && hasVariants) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        function addVariant() {
+            const searchInput = document.getElementById('variantSearch');
+            const priceInput = document.getElementById('variantPrice');
+            const variantName = searchInput.value.trim();
+            const price = parseFloat(priceInput.value) || 0.00;
+
+            if (!variantName) {
+                alert('Please enter a variant name');
+                return;
+            }
+
+            // Check if variant already exists in our current list
+            if (variants.some(v => v.name === variantName)) {
+                alert('This variant has already been added');
+                return;
+            }
+
+            const variantInfo = existingVariants.get(variantName);
+            const isExisting = !!variantInfo;
+            
+            // For existing variants, use the existing price unless user explicitly changes it
+            // For new variants, use the entered price
+            const finalPrice = isExisting && price === 0.00 ? variantInfo.price : price;
+
+            const variant = {
+                name: variantName,
+                price: finalPrice,
+                isExisting: isExisting
+            };
+
+            variants.push(variant);
+            updateVariantsDisplay();
+            updateHiddenInputs();
+            updateSubmitButton();
+
+            // Clear inputs
+            searchInput.value = '';
+            priceInput.value = '0';
+            searchInput.focus();
+        }
+
+        function removeVariant(variantName) {
+            variants = variants.filter(v => v.name !== variantName);
+            updateVariantsDisplay();
+            updateHiddenInputs();
+            updateSubmitButton();
+        }
+
+        function updateVariantsDisplay() {
+            const container = document.getElementById('variantsContainer');
+            container.innerHTML = '';
+
+            if (variants.length === 0) {
+                container.innerHTML = '<div class="text-muted text-center py-3">No variants added yet</div>';
+                return;
+            }
+
+            variants.forEach(variant => {
+                const variantDiv = document.createElement('div');
+                variantDiv.className = `variant-row ${variant.isExisting ? 'existing-variant' : 'new-variant'}`;
+                
+                variantDiv.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${variant.name}</strong>
+                            <span class="variant-badge ${variant.isExisting ? 'badge-existing' : 'badge-new'}">
+                                ${variant.isExisting ? 'Existing' : 'New'}
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-success fw-bold">₱${variant.price.toFixed(2)}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    onclick="removeVariant('${variant.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(variantDiv);
+            });
+        }
+
+        function updateHiddenInputs() {
+            const namesInput = document.getElementById('variantNames');
+            const pricesInput = document.getElementById('variantPrices');
+            
+            // Send variant names and prices as comma-separated strings
+            namesInput.value = variants.map(v => v.name).join(',');
+            pricesInput.value = variants.map(v => v.price).join(',');
+        }
+
+        // Auto-fill price when selecting existing variant
+        document.getElementById('variantSearch').addEventListener('input', function(e) {
+            const variantName = e.target.value;
+            const variantInfo = existingVariants.get(variantName);
+            const priceInput = document.getElementById('variantPrice');
+            
+            if (variantInfo) {
+                priceInput.value = variantInfo.price.toFixed(0); // Remove decimals since step="1"
+            } else {
+                priceInput.value = '0';
+            }
+        });
+
+        // Allow pressing Enter to add variant
+        document.getElementById('variantSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addVariant();
+            }
+        });
+
+        // Form submission validation
+        document.getElementById('menuForm').addEventListener('submit', function(e) {
+            if (!isMenuNameValid) {
+                e.preventDefault();
+                alert('Please fix the menu name validation errors before submitting.');
+                return;
+            }
+            
+            if (variants.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one variant.');
+                return;
+            }
+        });
+    </script>
 </body>
 </html>

@@ -2,8 +2,8 @@ package com.commonbrew.pos.mapper;
 
 import org.springframework.stereotype.Component;
 
+import com.commonbrew.pos.dto.AddonResponse;
 import com.commonbrew.pos.model.Addon;
-import com.commonbrew.pos.model.dto.AddonResponse;
 
 @Component
 public class AddonMapper {

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.commonbrew.pos.model.dto.MenuResponse;
+import com.commonbrew.pos.dto.MenuResponse;
 import com.commonbrew.pos.service.MenuService;
 
 import lombok.RequiredArgsConstructor;

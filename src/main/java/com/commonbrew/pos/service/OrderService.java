@@ -13,14 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.commonbrew.pos.constants.PaymentOption;
+import com.commonbrew.pos.dto.OrderConfirmSummary;
 import com.commonbrew.pos.model.Addon;
-import com.commonbrew.pos.model.ItemVariant;
+import com.commonbrew.pos.model.MenuVariant;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.OrderItem;
-import com.commonbrew.pos.model.dto.OrderConfirmSummary;
 import com.commonbrew.pos.repository.AddonRepository;
-import com.commonbrew.pos.repository.ItemVariantRepository;
+import com.commonbrew.pos.repository.MenuVariantRepository;
 import com.commonbrew.pos.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ItemVariantRepository variantRepository;
+    private final MenuVariantRepository variantRepository;
     private final AddonRepository addonRepository;
 
     @Transactional
@@ -60,7 +60,7 @@ public class OrderService {
             Integer quantity = quantities.get(i);
 
             // Get variant
-            ItemVariant variant = variantRepository.findById(variantId)
+            MenuVariant variant = variantRepository.findById(variantId)
                     .orElseThrow(() -> new RuntimeException("Variant not found: " + variantId));
 
             // Create main order item (the chosen variant)
@@ -69,7 +69,7 @@ public class OrderService {
             orderItem.setQuantity(quantity);
             orderItem.setVariantNameSnapshot(variant.getVariantName());
             orderItem.setUnitPriceSnapshot(variant.getPrice());
-            orderItem.setMenuItemNameSnapshot(variant.getMenuItem().getName());
+            // orderItem.setMenuItemNameSnapshot(variant.getMenu().getName());
             orderItem.setSubtotal(variant.getPrice() * quantity);
             orderItem.setOrder(order);
             orderItems.add(orderItem);
@@ -150,16 +150,15 @@ public class OrderService {
             Long variantId = Long.valueOf(variantsIds.get(i));
             int quantity = quantities.get(i);
 
-            ItemVariant itemVariant = variantRepository.getReferenceById(variantId);
-            MenuItem menuItem = itemVariant.getMenuItem();
+            MenuVariant variant = variantRepository.getReferenceById(variantId);
 
-            BigDecimal unitPrice = new BigDecimal(itemVariant.getPrice());
+            BigDecimal unitPrice = new BigDecimal(variant.getPrice());
             BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
 
             OrderConfirmSummary summary = OrderConfirmSummary.builder()
                     .variantId(variantId.intValue())
-                    .itemName(menuItem.getName())    
-                    .variantName(itemVariant.getVariantName())
+                    // .menuName(variant.getMenu().getName())    
+                    .variantName(variant.getVariantName())
                     .quantity(quantity)
                     .price(unitPrice)
                     .totalPrice(lineTotal)

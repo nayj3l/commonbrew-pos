@@ -1,4 +1,4 @@
-package com.commonbrew.pos.model.dto;
+package com.commonbrew.pos.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

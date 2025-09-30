@@ -5,10 +5,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.commonbrew.pos.dto.AddonResponse;
+import com.commonbrew.pos.dto.MenuItemResponse;
+import com.commonbrew.pos.dto.MenuResponse;
+import com.commonbrew.pos.dto.MenuVariantResponse;
 import com.commonbrew.pos.model.Menu;
-import com.commonbrew.pos.model.dto.AddonResponse;
-import com.commonbrew.pos.model.dto.MenuItemResponse;
-import com.commonbrew.pos.model.dto.MenuResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class MenuMapper {
 
     private final MenuItemMapper menuItemMapper;
+    private final MenuVariantMapper menuVariantMapper;
     private final AddonMapper addonMapper;
 
     public MenuResponse toResponse(Menu menu) {
@@ -35,6 +37,12 @@ public class MenuMapper {
                     .map(addonMapper::toResponse)
                     .toList()
                 : Collections.emptyList();
+
+        List<MenuVariantResponse> variantResponse = menu.getVariants() != null
+                ? menu.getVariants().stream()
+                    .map(menuVariantMapper::toResponse)
+                    .toList()
+                : Collections.emptyList();
         
         return MenuResponse.builder()
                 .id(menu.getId())
@@ -42,6 +50,7 @@ public class MenuMapper {
                 .name(menu.getName())
                 .active(menu.isActive())
                 .items(itemResponses)
+                .variants(variantResponse)
                 .addons(addonResponses)
                 .imageUrl(menu.getImageUrl())
                 .build();

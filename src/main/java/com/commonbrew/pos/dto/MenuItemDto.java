@@ -1,4 +1,4 @@
-package com.commonbrew.pos.model.dto;
+package com.commonbrew.pos.dto;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class MenuItemDto {
     // optional convenience fields for backward compatibility
     private Double basePrice;     // optional, e.g. first/default variant price
     private Double upsizePrice;   // optional: price of an "Upsize" variant if exists
-    private List<VariantDto> variants;
+    private List<MenuVariantDto> variants;
 
     public MenuItemDto(Long id, String name) {
         this.id = id;

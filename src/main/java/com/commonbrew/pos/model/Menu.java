@@ -1,6 +1,9 @@
 package com.commonbrew.pos.model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -10,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -37,7 +42,15 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<MenuItem> items;
+    private Set<MenuItem> items;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "menu_menu_variant",
+        joinColumns = @JoinColumn(name = "menu_id"),
+        inverseJoinColumns = @JoinColumn(name = "variant_id")
+    )
+    private Set<MenuVariant> variants = new HashSet<>();
 
     @ManyToMany(mappedBy = "menu")
     @JsonIgnore

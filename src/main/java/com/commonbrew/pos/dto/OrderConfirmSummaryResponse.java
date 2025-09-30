@@ -1,4 +1,4 @@
-package com.commonbrew.pos.model.dto;
+package com.commonbrew.pos.dto;
 
 import java.math.BigDecimal;
 import java.util.List;

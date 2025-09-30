@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.commonbrew.pos.dto.MenuItemResponse;
 import com.commonbrew.pos.model.MenuItem;
-import com.commonbrew.pos.model.dto.MenuItemResponse;
 import com.commonbrew.pos.service.MenuItemService;
 
 @RestController

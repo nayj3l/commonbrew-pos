@@ -24,20 +24,20 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.commonbrew.pos.constants.PaymentOption;
+import com.commonbrew.pos.dto.AddonConfirmSummary;
+import com.commonbrew.pos.dto.AddonResponse;
+import com.commonbrew.pos.dto.MenuItemDto;
+import com.commonbrew.pos.dto.MenuItemResponse;
+import com.commonbrew.pos.dto.MenuResponse;
+import com.commonbrew.pos.dto.MenuVariantDto;
+import com.commonbrew.pos.dto.MenuVariantResponse;
+import com.commonbrew.pos.dto.OrderConfirmSummary;
+import com.commonbrew.pos.dto.OrderConfirmSummaryResponse;
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
-import com.commonbrew.pos.model.dto.AddonConfirmSummary;
-import com.commonbrew.pos.model.dto.AddonResponse;
-import com.commonbrew.pos.model.dto.ItemVariantDto;
-import com.commonbrew.pos.model.dto.ItemVariantResponse;
-import com.commonbrew.pos.model.dto.MenuItemDto;
-import com.commonbrew.pos.model.dto.MenuItemResponse;
-import com.commonbrew.pos.model.dto.MenuResponse;
-import com.commonbrew.pos.model.dto.OrderConfirmSummary;
-import com.commonbrew.pos.model.dto.OrderConfirmSummaryResponse;
 import com.commonbrew.pos.service.AddonService;
-import com.commonbrew.pos.service.ItemVariantService;
+import com.commonbrew.pos.service.MenuVariantService;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
 import com.commonbrew.pos.service.OrderService;
@@ -55,14 +55,14 @@ public class OrderController {
     private final AddonService addonService;
     private final OrderService orderService;
     private final MenuService menuService;
-    private final ItemVariantService itemVariantService;
+    private final MenuVariantService variantService;
 
     @GetMapping
     public String showOrderPage(Model model) {
         List<MenuResponse> menu = menuService.getAllMenu();
         List<MenuItemResponse> menuItems = itemService.getAllItems();
         List<AddonResponse> addons = addonService.getAllAddons();
-        List<ItemVariantResponse> variants = itemVariantService.getAllVariants();
+        List<MenuVariantResponse> variants = variantService.getAllVariants();
 
         model.addAttribute("menu", menu);
         model.addAttribute("items", menuItems);
@@ -72,15 +72,15 @@ public class OrderController {
         return "order";
     }
 
-    @GetMapping("/items/{itemId}/variants")
-    @ResponseBody
-    public List<ItemVariantDto> getVariantsByMenuItem(@PathVariable Long itemId) {
-        MenuItem item = itemService.getItemById(itemId);
+    // @GetMapping("/items/{itemId}/variants")
+    // @ResponseBody
+    // public List<MenuVariantDto> getVariantsByMenuItem(@PathVariable Long itemId) {
+    //     MenuItem item = itemService.getItemById(itemId);
 
-        return item.getVariants().stream()
-            .map(v -> new ItemVariantDto(v.getVariantId(), v.getMenuItem().getId(), v.getVariantName(), v.getPrice()))
-            .collect(Collectors.toList());
-    }
+    //     return item.getVariants().stream()
+    //         .map(v -> new MenuVariantDto(v.getVariantId(), v.getMenuItem().getId(), v.getVariantName(), v.getPrice()))
+    //         .collect(Collectors.toList());
+    // }
 
     @GetMapping("/items/{menuId}")
     @ResponseBody

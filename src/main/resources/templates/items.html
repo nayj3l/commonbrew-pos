@@ -360,8 +360,7 @@
         <div class="items-list">
             <div class="item-card" th:each="item : ${menuItems}" 
                  th:data-item-id="${item.id}"
-                 th:data-item-name="${item.name}"
-                 th:data-item-variants="${#strings.listJoin(item.variants.![variantName + ':' + #numbers.formatDecimal(price, 1, 2)], ';')}">
+                 th:data-item-name="${item.name}">
                 <div class="card-content">
                     <h5 class="card-title" th:text="${item.name}">Item Name</h5>
                     <div class="action-buttons">
@@ -374,8 +373,8 @@
                     </div>
                 </div>
                 <!-- Variants Display -->
-                <div class="variants-container" th:if="${item.variants} and ${#lists.size(item.variants) > 0}">
-                    <span class="variant-pill" th:each="variant : ${item.variants}">
+                <div class="variants-container" th:if="${menu.variants} and ${#lists.size(menu.variants) > 0}">
+                    <span class="variant-pill" th:each="variant : ${menu.variants}">
                         <span th:text="${variant.variantName}"></span>
                         <span class="variant-price" th:text="'₱' + ${#numbers.formatDecimal(variant.price, 1, 2)}"></span>
                     </span>
@@ -436,8 +435,8 @@
                 card.addEventListener('click', function (e) {
                     if (!e.target.closest('.action-buttons')) {
                         const itemName = this.dataset.itemName;
-                        const variants = this.dataset.itemVariants
-                            ? this.dataset.itemVariants.split(';').map(v => {
+                        const variants = this.dataset.variants
+                            ? this.dataset.variants.split(';').map(v => {
                                 const [name, price] = v.split(':');
                                 return { variantName: name, price: parseFloat(price) };
                             }) 

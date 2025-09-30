@@ -1,4 +1,4 @@
-package com.commonbrew.pos.model.dto;
+package com.commonbrew.pos.dto;
 
 import java.util.List;
 
@@ -16,6 +16,5 @@ public class MenuItemResponse {
     private String name;
     private boolean active;
     private Long menuId;
-    private List<ItemVariantResponse> variants;
     private List<AddonResponse> addons;
 }

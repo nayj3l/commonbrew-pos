@@ -1,4 +1,4 @@
-package com.commonbrew.pos.model.dto;
+package com.commonbrew.pos.dto;
 
 import java.math.BigDecimal;
 
@@ -11,11 +11,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderConfirmSummary {
+public class AddonConfirmSummary {
     private String itemName;
-    private Integer variantId;
-    private String variantName;
+    private Long parentItemId;
+    private Long addonId;
+    private String addonName;
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal totalPrice;
 }
+

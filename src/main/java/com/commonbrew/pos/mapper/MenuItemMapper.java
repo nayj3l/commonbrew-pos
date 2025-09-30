@@ -2,8 +2,8 @@ package com.commonbrew.pos.mapper;
 
 import org.springframework.stereotype.Component;
 
+import com.commonbrew.pos.dto.MenuItemResponse;
 import com.commonbrew.pos.model.MenuItem;
-import com.commonbrew.pos.model.dto.MenuItemResponse;
 
 @Component
 public class MenuItemMapper {

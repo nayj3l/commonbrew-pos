@@ -1,4 +1,6 @@
-package com.commonbrew.pos.model.dto;
+package com.commonbrew.pos.dto;
+
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemVariantResponse {
-    private Long variantId;
-    private String variantName;
+public class AddonResponse {
+    private Long addonId;
+    private String addonName;
     private Double price;
-    private String code;
-    private boolean active;
+    private List<MenuResponse> menu;
 }

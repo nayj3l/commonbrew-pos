@@ -7,10 +7,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.commonbrew.pos.dto.AddonResponse;
+import com.commonbrew.pos.dto.MenuResponse;
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.Menu;
-import com.commonbrew.pos.model.dto.AddonResponse;
-import com.commonbrew.pos.model.dto.MenuResponse;
 import com.commonbrew.pos.repository.AddonRepository;
 import com.commonbrew.pos.repository.MenuRepository;
 

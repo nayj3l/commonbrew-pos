@@ -1,9 +1,11 @@
 package com.commonbrew.pos.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.commonbrew.pos.model.Menu;
 
@@ -12,9 +14,18 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     List<Menu> findByActiveTrue();
 
-    // Fetch only menus with items (no variants or addons)
+    Optional<Menu> findByIdAndActiveTrue(Long id);
+
     @Query("SELECT DISTINCT m FROM Menu m " +
-           "LEFT JOIN FETCH m.items i " +
-           "WHERE m.active = true")
-    List<Menu> findAllActiveMenusWithItems();
+        "LEFT JOIN FETCH m.items i " +
+        "LEFT JOIN FETCH m.variants v " +
+        "WHERE m.active = true")
+    List<Menu> findAllActiveMenus();
+
+    @Query("SELECT DISTINCT m FROM Menu m " +
+       "LEFT JOIN FETCH m.items i " +
+       "LEFT JOIN FETCH m.variants v " +
+       "WHERE m.active = true and m.id = :id")
+    Optional<Menu> findAllActiveMenusById(@Param("id") Long id);
+
 }

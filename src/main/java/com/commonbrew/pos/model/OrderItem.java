@@ -29,7 +29,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "variant_id", nullable = true)
-    private ItemVariant variant;
+    private MenuVariant variant;
 
     @Column(nullable = false)
     private String menuItemNameSnapshot;

@@ -1,33 +1,37 @@
 package com.commonbrew.pos.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "item_variants")
+@Table(name = "menu_variants")
 @Data
 @NoArgsConstructor
-public class ItemVariant {
+@AllArgsConstructor
+@Builder
+public class MenuVariant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long variantId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "menu_item_id", nullable = false)
+    @ManyToMany(mappedBy = "variants")
     @JsonIgnore
-    private MenuItem menuItem;
+    private Set<Menu> menus = new HashSet<>();
 
     // e.g. "Regular", "Upsize", "Sliced", "4-inch", or "Default"
     @Column(nullable = false)
@@ -43,4 +47,3 @@ public class ItemVariant {
     private boolean active = true;
 
 }
-

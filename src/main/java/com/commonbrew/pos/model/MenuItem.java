@@ -45,10 +45,6 @@ public class MenuItem {
     @Column(nullable = false)
     private String name;
 
-    // Variants (Regular, Upsize, Slice, 4-inch, etc.)
-    @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemVariant> variants;
-
     @Column
     private boolean active = true;
 

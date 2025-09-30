@@ -11,3 +11,13 @@ ALTER TABLE menu ADD COLUMN image_url VARCHAR(500);
 ALTER TABLE menu_items ADD COLUMN image_url VARCHAR(500);
 
 ALTER TABLE addons ADD COLUMN image_thumbnail_url VARCHAR(500);
+
+CREATE TABLE menu_menu_variant (
+    menu_id BIGINT NOT NULL,
+    variant_id BIGINT NOT NULL,
+    PRIMARY KEY (menu_id, variant_id),
+    CONSTRAINT fk_menu
+        FOREIGN KEY (menu_id) REFERENCES menu(id),
+    CONSTRAINT fk_variant
+        FOREIGN KEY (variant_id) REFERENCES menu_variants(variant_id)
+);
