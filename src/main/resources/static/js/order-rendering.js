@@ -89,7 +89,7 @@ function submitConfirmedOrder() {
         .join(",");
 
     document.getElementById("variantsIds").value = items
-        .map(i => i.itemId)
+        .map(i => i.variantId)
         .join(",");
 
     document.getElementById("quantities").value = items

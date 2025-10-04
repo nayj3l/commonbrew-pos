@@ -39,7 +39,8 @@ function addVariantsWithAddons() {
             currentOrder.items[existingIndex].quantity += variant.quantity;
         } else {
             currentOrder.items.push({
-                itemId: variant.variantId,
+                itemId: variant.itemId,
+                variantId: variant.variantId,
                 itemName: `${selectedItemName} (${variant.variantName})`,
                 itemPrice: variant.price,
                 quantity: variant.quantity,

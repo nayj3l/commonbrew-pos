@@ -29,13 +29,13 @@ public class MenuVariant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long variantId;
 
-    @ManyToMany(mappedBy = "variants")
-    @JsonIgnore
-    private Set<Menu> menus = new HashSet<>();
-
     // e.g. "Regular", "Upsize", "Sliced", "4-inch", or "Default"
     @Column(nullable = false)
     private String variantName;
+
+    @ManyToMany(mappedBy = "variants")
+    @JsonIgnore
+    private Set<Menu> menus = new HashSet<>();
 
     @Column(nullable = false)
     private Double price;

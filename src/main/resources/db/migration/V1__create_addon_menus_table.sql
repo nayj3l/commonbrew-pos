@@ -21,3 +21,17 @@ CREATE TABLE menu_menu_variant (
     CONSTRAINT fk_variant
         FOREIGN KEY (variant_id) REFERENCES menu_variants(variant_id)
 );
+
+ALTER TABLE order_item
+ADD COLUMN item_id BIGINT NOT NULL;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+ALTER TABLE order_item
+ADD CONSTRAINT fk_orderitem_item
+FOREIGN KEY (item_id) REFERENCES menu_items(id);
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+ALTER TABLE order_item
+MODIFY COLUMN variant_id BIGINT NOT NULL;

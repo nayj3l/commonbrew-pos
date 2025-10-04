@@ -19,14 +19,11 @@ function loadItems(menuId) {
         
         // Filter items belonging to the selected menu
         const items = orderData.items.filter(item => item.menuId == menuId);
-        
         const selectFlavor = document.getElementById("itemsModalBody");
-        
         if (!selectFlavor) {
             console.error('ERROR: itemsModalBody element not found!');
             return;
         }
-
         selectFlavor.innerHTML = "";
 
         if (!items || items.length === 0) {
@@ -45,6 +42,7 @@ function loadItems(menuId) {
             flavorBtn.textContent = item.name;
             flavorBtn.dataset.itemId = item.id;
             flavorBtn.dataset.itemPrice = item.basePrice;
+            flavorBtn.dataset.menuId = menuId;
             flavorBtn.onclick = function() {
                 loadVariants(this);
                 bootstrap.Modal.getInstance(document.getElementById("itemsModal")).hide();

@@ -28,7 +28,11 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "variant_id", nullable = true)
+    @JoinColumn(name = "item_id", nullable = false)
+    private MenuItem item;
+
+    @ManyToOne
+    @JoinColumn(name = "variant_id", nullable = false)
     private MenuVariant variant;
 
     @Column(nullable = false)

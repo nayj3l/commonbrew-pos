@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderConfirmSummary {
     private String menuName;
+    private Long itemId;
+    private String itemName;
     private Integer variantId;
     private String variantName;
     private Integer quantity;

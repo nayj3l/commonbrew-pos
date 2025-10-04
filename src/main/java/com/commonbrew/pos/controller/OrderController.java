@@ -29,7 +29,6 @@ import com.commonbrew.pos.dto.AddonResponse;
 import com.commonbrew.pos.dto.MenuItemDto;
 import com.commonbrew.pos.dto.MenuItemResponse;
 import com.commonbrew.pos.dto.MenuResponse;
-import com.commonbrew.pos.dto.MenuVariantDto;
 import com.commonbrew.pos.dto.MenuVariantResponse;
 import com.commonbrew.pos.dto.OrderConfirmSummary;
 import com.commonbrew.pos.dto.OrderConfirmSummaryResponse;
@@ -37,9 +36,9 @@ import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.service.AddonService;
-import com.commonbrew.pos.service.MenuVariantService;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
+import com.commonbrew.pos.service.MenuVariantService;
 import com.commonbrew.pos.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -74,12 +73,14 @@ public class OrderController {
 
     // @GetMapping("/items/{itemId}/variants")
     // @ResponseBody
-    // public List<MenuVariantDto> getVariantsByMenuItem(@PathVariable Long itemId) {
-    //     MenuItem item = itemService.getItemById(itemId);
+    // public List<MenuVariantDto> getVariantsByMenuItem(@PathVariable Long itemId)
+    // {
+    // MenuItem item = itemService.getItemById(itemId);
 
-    //     return item.getVariants().stream()
-    //         .map(v -> new MenuVariantDto(v.getVariantId(), v.getMenuItem().getId(), v.getVariantName(), v.getPrice()))
-    //         .collect(Collectors.toList());
+    // return item.getVariants().stream()
+    // .map(v -> new MenuVariantDto(v.getVariantId(), v.getMenuItem().getId(),
+    // v.getVariantName(), v.getPrice()))
+    // .collect(Collectors.toList());
     // }
 
     @GetMapping("/items/{menuId}")
@@ -96,29 +97,39 @@ public class OrderController {
     // Final order submission (redirect to success page)
     @PostMapping("/submit")
     public String submitOrder(
+            @RequestParam("itemId") List<Long> itemIds,
             @RequestParam("variantId") List<Long> variantIds,
             @RequestParam("quantity") List<Integer> quantities,
-            @RequestParam(value = "addonItemIds", required = false) List<Long> addonItemIds,
-            @RequestParam(value = "addonIds", required = false) List<Long> addonIds,
-            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
-            @RequestParam("paymentMethod") String paymentMethod,
-            @RequestParam(value = "unpaidReason", required = false) String unpaidReason,
+            @RequestParam(required = false) List<Long> addonItemIds,
+            @RequestParam(required = false) List<Long> addonIds,
+            @RequestParam(required = false) List<Integer> addonQuantities,
+            @RequestParam String paymentMethod,
+            @RequestParam(required = false) String unpaidReason,
             RedirectAttributes redirectAttributes) {
 
-    log.info("Received variantIds: {}", variantIds);
-    log.info("Received quantities: {}", quantities);
-    log.info("Received addonItemIds: {}", addonItemIds);
-    log.info("Received addonIds: {}", addonIds);
-    log.info("Received addonQuantities: {}", addonQuantities);
-    log.info("Payment method: {}", paymentMethod);
-    log.info("Unpaid reason: {}", unpaidReason);
+        log.info("Received itemIds: {}", itemIds);
+        log.info("Received variantIds: {}", variantIds);
+        log.info("Received quantities: {}", quantities);
+        log.info("Received addonItemIds: {}", addonItemIds);
+        log.info("Received addonIds: {}", addonIds);
+        log.info("Received addonQuantities: {}", addonQuantities);
+        log.info("Payment method: {}", paymentMethod);
+        log.info("Unpaid reason: {}", unpaidReason);
 
         if (addonItemIds == null) addonItemIds = new ArrayList<>();
         if (addonIds == null) addonIds = new ArrayList<>();
         if (addonQuantities == null) addonQuantities = new ArrayList<>();
 
-        if (variantIds == null || quantities == null || variantIds.size() != quantities.size()) {
-            throw new IllegalArgumentException("variantIds and quantities are required and must have the same length");
+        if (itemIds == null || variantIds == null || quantities == null) {
+            throw new IllegalArgumentException("itemIds, variantIds, and quantities are all required");
+        }
+
+        if (itemIds.isEmpty() || variantIds.isEmpty() || quantities.isEmpty()) {
+            throw new IllegalArgumentException("itemIds, variantIds, and quantities cannot be empty");
+        }
+
+        if (itemIds.size() != variantIds.size() || itemIds.size() != quantities.size()) {
+            throw new IllegalArgumentException("Each item must have a corresponding variant and quantity");
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -133,14 +144,14 @@ public class OrderController {
         addonQuantitiesList.add(addonQuantities);
 
         Order savedOrder = orderService.createOrder(
+                itemIds,
                 variantIds,
                 quantities,
                 addonIdsList,
                 addonQuantitiesList,
                 paymentOption,
                 unpaidReason,
-                barista
-        );
+                barista);
 
         redirectAttributes.addAttribute("orderId", savedOrder.getId());
         redirectAttributes.addAttribute("totalAmount", savedOrder.getTotalAmount());
@@ -150,12 +161,12 @@ public class OrderController {
 
     @GetMapping("/success")
     public String showSuccessPage(@RequestParam Long orderId,
-                                @RequestParam Double totalAmount,
-                                Model model) {
-        
+            @RequestParam Double totalAmount,
+            Model model) {
+
         Order order = orderService.findById(orderId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Order not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Order not found"));
 
         model.addAttribute("orderId", order.getId());
         model.addAttribute("totalAmount", order.getTotalAmount());
@@ -164,15 +175,15 @@ public class OrderController {
 
     @PostMapping("/confirm")
     public String confirmOrder(
-            @RequestParam("itemIds") List<Integer> itemIds,
-            @RequestParam("variantsIds") List<Integer> variantsIds,
-            @RequestParam("quantities") List<Integer> quantities,
-            @RequestParam(value = "addonIds", required = false) List<Integer> addonIds,
-            @RequestParam(value = "addonQuantities", required = false) List<Integer> addonQuantities,
+            @RequestParam List<Integer> itemIds,
+            @RequestParam List<Integer> variantsIds,
+            @RequestParam List<Integer> quantities,
+            @RequestParam(required = false) List<Integer> addonIds,
+            @RequestParam(required = false) List<Integer> addonQuantities,
             Model model) {
-                
-        log.info("Received itemIds : {}", itemIds );
-        log.info("Received variantsIds : {}", variantsIds );
+
+        log.info("Received itemIds : {}", itemIds);
+        log.info("Received variantsIds : {}", variantsIds);
         log.info("Received quantities: {}", quantities);
         log.info("Received addonIds: {}", addonIds);
         log.info("Received addonQuantities: {}", addonQuantities);
@@ -192,7 +203,7 @@ public class OrderController {
             throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
         }
 
-        List<OrderConfirmSummary> items = orderService.buildOrderSummary(variantsIds, quantities);
+        List<OrderConfirmSummary> items = orderService.buildOrderSummary(itemIds, variantsIds, quantities);
         List<AddonConfirmSummary> addons = new ArrayList<>();
         if (addonIds != null) {
             for (int i = 0; i < addonIds.size(); i++) {
@@ -202,57 +213,42 @@ public class OrderController {
 
                 Addon addon = orderService.getAddonById(Long.valueOf(addonId));
                 addons.add(new AddonConfirmSummary(
-                    addon.getAddonName(),
-                    (long) itemId,
-                    (long) addonId,
-                    "Addon",
-                    quantity,
-                    BigDecimal.valueOf(addon.getPrice()),
-                    BigDecimal.valueOf(addon.getPrice() * quantity)
-                ));
+                        addon.getAddonName(),
+                        (long) itemId,
+                        (long) addonId,
+                        "Addon",
+                        quantity,
+                        BigDecimal.valueOf(addon.getPrice()),
+                        BigDecimal.valueOf(addon.getPrice() * quantity)));
             }
         }
 
         BigDecimal total = items.stream()
-            .map(OrderConfirmSummary::getTotalPrice)
-            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .add(addons.stream().map(AddonConfirmSummary::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+                .map(OrderConfirmSummary::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(addons.stream().map(AddonConfirmSummary::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
 
         model.addAttribute("orderConfirmSummary", new OrderConfirmSummaryResponse(items, addons, total));
         return "order-confirm";
     }
 
-    // @GetMapping("/history")
-    // public String showOrderHistory(Model model) {
-    //     List<Order> orders = orderService.getAllOrders()
-    //                                     .stream()
-    //                                     .sorted((o1, o2) -> o2.getOrderTime().compareTo(o1.getOrderTime()))
-    //                                     .toList(); // descending by orderTime
-    //     log.info("Found {} orders", orders);
-    //     model.addAttribute("orders", orders);
-    //     return "order-history";
-    // }
-
     @GetMapping("/history")
     public String showOrderHistory(
-            @RequestParam(value = "from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
 
-            @RequestParam(value = "to", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
 
             Model model) {
 
-            List<Order> orders;
+        List<Order> orders;
 
-            if (fromDate != null && toDate != null) {
-                LocalDateTime from = fromDate.atStartOfDay();
-                LocalDateTime to   = toDate.atTime(LocalTime.MAX);
-                orders = orderService.getOrdersBetween(from, to);
-            } else {
-                orders = orderService.getOrdersForToday();
-            }
-
+        if (fromDate != null && toDate != null) {
+            LocalDateTime from = fromDate.atStartOfDay();
+            LocalDateTime to = toDate.atTime(LocalTime.MAX);
+            orders = orderService.getOrdersBetween(from, to);
+        } else {
+            orders = orderService.getOrdersForToday();
+        }
 
         model.addAttribute("orders", orders);
         model.addAttribute("from", fromDate);

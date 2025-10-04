@@ -697,6 +697,7 @@
                     <input type="hidden" name="unpaidReason" id="unpaidReasonInput">
 
                     <div th:each="item, iterStat : ${orderConfirmSummary.items}">
+                        <input type="hidden" name="itemId" th:value="${item.itemId}" />
                         <input type="hidden" name="variantId" th:value="${item.variantId}" />
                         <input type="hidden" name="quantity" th:value="${item.quantity}" />
                     </div>

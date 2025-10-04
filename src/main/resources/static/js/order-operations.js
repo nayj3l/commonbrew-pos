@@ -4,11 +4,12 @@ let selectedItemName = "";
 // Select Variant & Addons using cached data
 function loadVariants(button) {
     console.log('=== loadVariants START ===');
-    
+
     const variantQuantitiesDiv = document.getElementById('variantModalBody');
     variantQuantitiesDiv.innerHTML = '';
 
     const itemId = button.getAttribute("data-item-id");
+    const menuId = button.getAttribute("data-menu-id");
     selectedItemName = button.textContent;
 
     const modalBody = document.getElementById("variantModalBody");
@@ -24,6 +25,8 @@ function loadVariants(button) {
         // Use cached data
         const orderData = loadOrderData();
 
+        // Find menu by menuId
+        const menu = orderData.menus.find(m => m.id == menuId);
         console.log('Cached data loaded:', orderData);
 
         // Convert itemId to number for comparison
@@ -41,8 +44,8 @@ function loadVariants(button) {
         }
 
         // Use the variants from the item (they're already in the item object)
-        const variants = item.variants || [];
-        console.log('Item variants:', variants);
+        const variants = menu.variants || [];
+        console.log('Menu variants:', variants);
 
         modalBody.innerHTML = ""; // clear loading message
 

@@ -28,4 +28,9 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
        "WHERE m.active = true and m.id = :id")
     Optional<Menu> findAllActiveMenusById(@Param("id") Long id);
 
+    @Query("SELECT m FROM Menu m " +
+           "JOIN m.items i " +
+           "WHERE i.id = :menuItemId")
+    Optional<Menu> findMenuByMenuItemId(@Param("menuItemId") Long menuItemId);
+
 }

@@ -8,18 +8,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.commonbrew.pos.constants.PaymentOption;
 import com.commonbrew.pos.dto.OrderConfirmSummary;
 import com.commonbrew.pos.model.Addon;
-import com.commonbrew.pos.model.MenuVariant;
+import com.commonbrew.pos.model.Menu;
 import com.commonbrew.pos.model.MenuItem;
+import com.commonbrew.pos.model.MenuVariant;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.model.OrderItem;
 import com.commonbrew.pos.repository.AddonRepository;
+import com.commonbrew.pos.repository.MenuItemRepository;
+import com.commonbrew.pos.repository.MenuRepository;
 import com.commonbrew.pos.repository.MenuVariantRepository;
 import com.commonbrew.pos.repository.OrderRepository;
 
@@ -32,15 +34,18 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final MenuRepository menuRepository;
+    private final MenuItemRepository menuItemRepository;
     private final MenuVariantRepository variantRepository;
     private final AddonRepository addonRepository;
 
     @Transactional
     public Order createOrder(
+            List<Long> itemIds,
             List<Long> variantIds,
             List<Integer> quantities,
-            List<List<Long>> addonIdsList,          // optional: list of addon IDs per variant
-            List<List<Integer>> addonQuantitiesList,// optional: quantities of addons per variant
+            List<List<Long>> addonIdsList, // optional: list of addon IDs per variant
+            List<List<Integer>> addonQuantitiesList, // optional: quantities of addons per variant
             PaymentOption paymentOption,
             String unpaidReason,
             String barista) {
@@ -55,9 +60,16 @@ public class OrderService {
         double totalAmount = 0;
         List<OrderItem> orderItems = new ArrayList<>();
 
-        for (int i = 0; i < variantIds.size(); i++) {
+        for (int i = 0; i < itemIds.size(); i++) {
+            Long itemId = itemIds.get(i);
             Long variantId = variantIds.get(i);
             Integer quantity = quantities.get(i);
+
+            MenuItem menuItem = menuItemRepository.findById(itemId)
+                    .orElseThrow(() -> new RuntimeException("MenuItem not found: " + itemId));
+
+            Menu menu = menuRepository.findMenuByMenuItemId(itemId)
+                    .orElseThrow(() -> new RuntimeException("Menu not found for MenuItem: " + itemId));
 
             // Get variant
             MenuVariant variant = variantRepository.findById(variantId)
@@ -65,11 +77,12 @@ public class OrderService {
 
             // Create main order item (the chosen variant)
             OrderItem orderItem = new OrderItem();
+            orderItem.setItem(menuItem);
             orderItem.setVariant(variant);
             orderItem.setQuantity(quantity);
             orderItem.setVariantNameSnapshot(variant.getVariantName());
             orderItem.setUnitPriceSnapshot(variant.getPrice());
-            // orderItem.setMenuItemNameSnapshot(variant.getMenu().getName());
+            orderItem.setMenuItemNameSnapshot("(" + menu.getName() + ") " + menuItem.getName());
             orderItem.setSubtotal(variant.getPrice() * quantity);
             orderItem.setOrder(order);
             orderItems.add(orderItem);
@@ -120,44 +133,56 @@ public class OrderService {
     public List<Order> getOrdersForToday() {
         LocalDate today = LocalDate.now();
         LocalDateTime from = today.atStartOfDay();
-        LocalDateTime to   = today.atTime(LocalTime.MAX);
+        LocalDateTime to = today.atTime(LocalTime.MAX);
         return getOrdersBetween(from, to);
     }
 
     public List<Order> getOrdersByDateRange(LocalDate fromDate, LocalDate toDate) {
         LocalDateTime startDateTime = fromDate.atStartOfDay();
         LocalDateTime endDateTime = toDate.atTime(LocalTime.MAX);
-        
+
         log.info("Converting date range to LocalDateTime:");
         log.info("fromDate: {} -> startDateTime: {}", fromDate, startDateTime);
         log.info("toDate: {} -> endDateTime: {}", toDate, endDateTime);
         log.info("Querying database for orders between {} and {}", startDateTime, endDateTime);
 
         List<Order> orders = orderRepository.findByOrderTimeBetweenOrderByOrderTimeDesc(startDateTime, endDateTime);
-        
+
         log.info("Retrieved {} orders from database", orders.size());
-        
+
         return orders;
     }
 
     public List<OrderConfirmSummary> buildOrderSummary(
+            List<Integer> itemIds,
             List<Integer> variantsIds,
-            List<Integer> quantities
-    ) {
+            List<Integer> quantities) {
         List<OrderConfirmSummary> summaries = new ArrayList<>();
 
-        for (int i = 0; i < variantsIds.size(); i++) {
+        for (int i = 0; i < itemIds.size(); i++) {
+            Long itemId = Long.valueOf(itemIds.get(i));
             Long variantId = Long.valueOf(variantsIds.get(i));
             int quantity = quantities.get(i);
 
+            // Fetch MenuItem
+            MenuItem item = menuItemRepository.getReferenceById(itemId);
+
+            // Get Menu from item
+            Menu menu = item.getMenu();
+
+            // Fetch Variant
             MenuVariant variant = variantRepository.getReferenceById(variantId);
 
-            BigDecimal unitPrice = new BigDecimal(variant.getPrice());
+            BigDecimal unitPrice = BigDecimal.valueOf(variant.getPrice());
             BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
 
+            String fullItemName = "[" + menu.getName() + "] " + item.getName();
+
             OrderConfirmSummary summary = OrderConfirmSummary.builder()
+                    .menuName(menu.getName())
+                    .itemId(item.getId())
+                    .itemName(fullItemName)
                     .variantId(variantId.intValue())
-                    // .menuName(variant.getMenu().getName())    
                     .variantName(variant.getVariantName())
                     .quantity(quantity)
                     .price(unitPrice)
@@ -177,7 +202,7 @@ public class OrderService {
 
     public Addon getAddonById(Long addonId) {
         return addonRepository.findById(addonId)
-            .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
+                .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
     }
 
 }
