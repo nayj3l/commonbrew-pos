@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login • CommonBrew POS</title>
+
+  <!-- CSRF meta for AJAX (optional) -->
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent: #FA812F;
+      --dark: #344F1F;
+      --light: #FEF3E2;
+      --muted: rgba(0,0,0,0.55);
+      --radius: 14px;
+    }
+
+    html,body {
+      height: 100%;
+      background: linear-gradient(180deg,#fffaf6 0%, #f8f6f2 100%);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: var(--dark);
+    }
+
+    .center-viewport {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-shell {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+    }
+
+    /* Logo + header */
+    .logo-header {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(-16px);
+      animation: fade-slide-in 900ms cubic-bezier(.17,.85,.44,1) forwards;
+    }
+
+    .logo-header img {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      object-fit: contain;
+      box-shadow: 0 4px 14px rgba(52,79,31,0.12);
+    }
+
+    .logo-text h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--dark);
+    }
+
+    .logo-text .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    @keyframes fade-slide-in {
+      to { opacity:1; transform: translateY(0); }
+    }
+
+    /* Card */
+    .auth-card {
+      background: linear-gradient(180deg, #ffffffcc, var(--light));
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      box-shadow: 0 12px 40px rgba(20,20,20,0.06);
+      border: 1px solid rgba(52,79,31,0.06);
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 4px rgba(250,129,47,0.08);
+      border-color: var(--accent);
+    }
+
+    .btn-accent {
+      background: linear-gradient(90deg,var(--accent), #ff9d4f);
+      border: none;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight:600;
+    }
+
+    .btn-accent:hover { filter:brightness(.98); transform: translateY(-1px); transition: all .12s ease; }
+
+    .small-note { font-size: 13px; color:var(--muted); margin-top:12px; text-align:center; }
+
+  </style>
+</head>
+<body>
+  <div class="center-viewport">
+    <div class="login-shell">
+
+      <!-- Logo + welcome header -->
+      <div class="logo-header">
+        <img src="/logo.png" alt="CommonBrew Logo" />
+        <div class="logo-text">
+          <h1>Welcome Back</h1>
+          <div class="subtitle">Sign in to your CommonBrew account</div>
+        </div>
+      </div>
+
+      <div class="auth-card" role="main" aria-labelledby="loginHeading">
+
+        <!-- show error / logout -->
+        <div th:if="${param.error}" class="alert alert-danger" role="alert" style="margin-top:8px;">
+          Invalid username or password.
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success" role="alert" style="margin-top:8px;">
+          You have been logged out.
+        </div>
+
+        <form th:action="@{/login}" method="post" class="mt-2">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+          <div class="mb-3">
+            <label for="username" class="form-label small text-uppercase fw-bold">Username</label>
+            <input id="username" name="username" type="text" class="form-control" required autofocus />
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label small text-uppercase fw-bold">Password</label>
+            <input id="password" name="password" type="password" class="form-control" required />
+        </div>
+
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input id="remember" name="remember-me" type="checkbox" class="form-check-input" />
+              <label for="remember" class="form-check-label small">Remember me</label>
+            </div>
+            <a href="#" class="small" style="color:var(--dark); text-decoration:underline; opacity:.7;">Forgot?</a>
+          </div>
+
+          <button type="submit" class="btn btn-accent w-100">Sign in</button>
+
+          <!-- <div class="small-note">Use <strong>admin / admin</strong> for testing</div> -->
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(() => {
+        const el = document.getElementById('username');
+        if (el) el.focus();
+      }, 500);
+    });
+  </script>
+</body>
+</html>
