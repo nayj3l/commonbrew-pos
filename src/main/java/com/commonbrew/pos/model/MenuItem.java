@@ -46,7 +46,6 @@ public class MenuItem {
     @Column
     private boolean active = true;
 
-    // Auditing fields
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdDate;

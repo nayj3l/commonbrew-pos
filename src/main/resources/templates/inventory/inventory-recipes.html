@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CommonBrew POS - Recipes</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --success: #4cc9f0;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: var(--dark);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 100%; animation: fadeIn 0.4s ease; }
+        .app-header { text-align: center; margin-bottom: 25px; }
+        .app-logo { color: var(--primary); font-weight: 700; font-size: 26px; }
+        .app-subtitle { color: var(--gray); font-size: 14px; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px 20px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .card-icon {
+            font-size: 42px;
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            margin-inline: auto;
+            margin-bottom: 12px;
+        }
+
+        .card-title { font-weight: 600; font-size: 18px; }
+        .card-description { color: var(--gray); font-size: 13px; }
+
+        .back-btn {
+            margin-top: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="app-header">
+        <div class="app-logo">Inventory - Recipes</div>
+        <div class="app-subtitle">Manage recipes and ingredient quantities per variant</div>
+    </div>
+
+    <div class="dashboard-grid">
+        <a href="/inventory/recipes/list" class="dashboard-card">
+            <div class="card-icon"><i class="bi bi-journal-text"></i></div>
+            <div class="card-title">View Recipes</div>
+            <div class="card-description">See all recipe compositions</div>
+        </a>
+
+        <a href="/inventory/recipes/new" class="dashboard-card">
+            <div class="card-icon"><i class="bi bi-plus-circle"></i></div>
+            <div class="card-title">Add Recipe</div>
+            <div class="card-description">Create new recipe for item & variant</div>
+        </a>
+
+        <a href="/inventory" class="back-btn">
+            ← Back to Inventory Home
+        </a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.dashboard-card').forEach(c => {
+            c.addEventListener('touchstart', () => c.style.transform = 'scale(0.97)');
+            c.addEventListener('touchend', () => c.style.transform = '');
+        });
+    });
+</script>
+</body>
+</html>

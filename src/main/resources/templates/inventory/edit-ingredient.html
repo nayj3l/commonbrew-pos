@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CommonBrew POS - Ingredients</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Optional: Spring Security CSRF tokens for fetch() calls.
+         If you don't use Spring Security remove these two lines. -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        /* (same style you provided) */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --danger: #ef476f;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            font-family: system-ui, sans-serif;
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 80px; /* space for fixed Add button */
+        }
+        .container { width: 100%; max-width: 800px; padding: 20px; }
+        .app-header { text-align: center; margin-bottom: 20px; }
+        .app-logo { font-size: 26px; font-weight: 700; color: var(--primary); }
+        .app-subtitle { color: var(--gray); font-size: 14px; }
+        .ingredient-card {
+            background: white; border-radius: var(--radius); box-shadow: var(--shadow);
+            padding: 15px 20px; display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px; transition: all 0.2s ease;
+        }
+        .ingredient-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+        .ingredient-info { display: flex; flex-direction: column; }
+        .ingredient-name { font-weight: 600; font-size: 16px; }
+        .ingredient-actions button { border: none; background: none; cursor: pointer; color: var(--primary); margin-left: 8px; }
+        .ingredient-actions button.delete { color: var(--danger); }
+        .add-btn {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 400px; background: var(--primary); color: white;
+            border: none; border-radius: 50px; padding: 14px 20px; font-size: 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        .add-btn:hover { background: var(--primary-light); transform: translateX(-50%) scale(1.02); }
+        .back-btn { display: inline-block; margin-top: 15px; text-decoration: none; font-size: 14px; color: var(--primary); }
+        .badge-unit, .badge-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: white; }
+        .badge-unit { background: var(--primary-light); }
+        .badge-status.active { background: #06d6a0; }
+        .badge-status.inactive { background: #ef476f; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="app-header">
+        <div class="app-logo">Inventory - Ingredients</div>
+        <div class="app-subtitle">Manage all available raw materials</div>
+    </div>
+
+    <!-- Ingredients List -->
+    <div id="ingredientList">
+        <div class="ingredient-card" th:each="ingredient : ${ingredients}">
+            <div class="ingredient-info">
+                <div class="ingredient-wrapper d-flex align-items-center gap-2">
+                    <span class="ingredient-name" th:text="${ingredient.name}">Ingredient Name</span>
+                    <span class="badge-unit" th:text="${ingredient.unit}">g</span>
+                    <span class="badge-status"
+                          th:classappend="${ingredient.active} ? ' active' : ' inactive'"
+                          th:text="${ingredient.active} ? 'Active' : 'Inactive'">
+                        Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="ingredient-actions">
+                <button type="button" title="Edit"
+                        th:onclick="'openEditModal(' + ${ingredient.id} + ')'"
+                        >
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+
+                <button type="button" class="delete" title="Delete"
+                        th:onclick="'openDeleteModal(' + ${ingredient.id} + ', \\''
+                                      + ${ingredient.name} + '\\')'">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <a href="/inventory" class="back-btn">← Back to Inventory Home</a>
+</div>
+
+<!-- Fixed Add Button -->
+<button class="add-btn" onclick="window.location.href='/inventory/ingredients/add'">
+    <i class="bi bi-plus-circle me-2"></i> Add Ingredient
+</button>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editIngredientModal" tabindex="-1" aria-labelledby="editIngredientLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editIngredientForm" onsubmit="event.preventDefault(); submitEditForm();">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editIngredientLabel">Edit Ingredient</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit-id">
+            <div class="mb-3">
+                <label for="edit-name" class="form-label">Name</label>
+                <input type="text" id="edit-name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="edit-unit" class="form-label">Unit</label>
+                <input type="text" id="edit-unit" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="edit-category" class="form-label">Category</label>
+                <select id="edit-category" class="form-select" th:each="c : ${categories}">
+                    <!-- Using Thymeleaf to populate options -->
+                    <option th:value="${c}" th:text="${c}">Liquid</option>
+                </select>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="edit-active">
+                <label class="form-check-label" for="edit-active">Active</label>
+            </div>
+            <div id="edit-error" class="text-danger mt-2" style="display:none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteIngredientModal" tabindex="-1" aria-labelledby="deleteIngredientLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="deleteIngredientLabel">Confirm Delete</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p id="delete-confirm-text">Are you sure?</p>
+            <div id="delete-error" class="text-danger" style="display:none"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger btn-sm" id="deleteConfirmBtn">Delete</button>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Optional: CSRF header from meta (Spring Security)
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+    // Modal instances
+    const editModalEl = document.getElementById('editIngredientModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+    const deleteModalEl = document.getElementById('deleteIngredientModal');
+    const deleteModal = new bootstrap.Modal(deleteModalEl);
+
+    function openEditModal(id) {
+        // clear any previous error
+        document.getElementById('edit-error').style.display = 'none';
+        // fetch ingredient JSON
+        fetch(`/inventory/ingredients/${id}`)
+            .then(resp => {
+                if (!resp.ok) throw new Error('Could not load ingredient');
+                return resp.json();
+            })
+            .then(ingredient => {
+                document.getElementById('edit-id').value = ingredient.id;
+                document.getElementById('edit-name').value = ingredient.name || '';
+                document.getElementById('edit-unit').value = ingredient.unit || '';
+                // try set category if present
+                if (ingredient.category !== undefined) {
+                    const sel = document.getElementById('edit-category');
+                    for (let i = 0; i < sel.options.length; i++) {
+                        if (sel.options[i].value === ingredient.category) {
+                            sel.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                document.getElementById('edit-active').checked = !!ingredient.active;
+                editModal.show();
+            })
+            .catch(err => {
+                alert('Failed to load ingredient for editing.');
+                console.error(err);
+            });
+    }
+
+    function submitEditForm() {
+        const id = document.getElementById('edit-id').value;
+        const payload = {
+            id: id ? Number(id) : null,
+            name: document.getElementById('edit-name').value,
+            unit: document.getElementById('edit-unit').value,
+            category: document.getElementById('edit-category').value,
+            active: document.getElementById('edit-active').checked
+        };
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+        fetch('/inventory/ingredients/update', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        })
+        .then(resp => {
+            if (resp.ok) {
+                editModal.hide();
+                // reload list to reflect changes
+                location.reload();
+            } else {
+                return resp.text().then(txt => { throw new Error(txt || 'Update failed'); });
+            }
+        })
+        .catch(err => {
+            const el = document.getElementById('edit-error');
+            el.style.display = 'block';
+            el.textContent = 'Failed to update: ' + (err.message || err);
+            console.error(err);
+        });
+    }
+
+    // DELETE flow
+    let deleteTargetId = null;
+    function openDeleteModal(id, name) {
+        deleteTargetId = id;
+        document.getElementById('delete-confirm-text').textContent = `Delete "${name}"? This will mark it inactive.`;
+        document.getElementById('delete-error').style.display = 'none';
+        deleteModal.show();
+    }
+
+    document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
+        if (!deleteTargetId) return;
+        const headers = {};
+        if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+        fetch(`/inventory/ingredients/delete/${deleteTargetId}`, {
+            method: 'DELETE',
+            headers
+        })
+        .then(resp => {
+            if (resp.ok) {
+                deleteModal.hide();
+                location.reload();
+            } else {
+                return resp.text().then(txt => { throw new Error(txt || 'Delete failed'); });
+            }
+        })
+        .catch(err => {
+            const el = document.getElementById('delete-error');
+            el.style.display = 'block';
+            el.textContent = 'Failed to delete: ' + (err.message || err);
+            console.error(err);
+        });
+    });
+</script>
+</body>
+</html>

@@ -35,3 +35,25 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 ALTER TABLE order_item
 MODIFY COLUMN variant_id BIGINT NOT NULL;
+
+/*
+| Entity      | Relation                   | Description |
+| ----------- | -------------------------- | ----------- |
+| Menu        | → MenuItem                 | 1:N         |
+| Menu        | → MenuVariant              | M:N         |
+| MenuItem    | → Recipe                   | 1:N         |
+| MenuVariant | → Recipe ❌                | 1:N         |
+| Recipe      | → Ingredient               | N:1         |
+| Ingredient  | → IngredientDailyInventory | 1:N         |
+| Order       | → OrderItem                | 1:N         |
+| OrderItem   | → (MenuItem + MenuVariant) | N:1         |
+*/
+
+/*
+Context:
+Menu (e.g., Milktea, Coffee, Frappe)
+MenuItem (e.g., WinterMelon, Americano)
+Variant (e.g., Regular, Upsize)
+Ingredient (e.g., Assam Tea, Milk, Matcha Powder)
+Recipe (defines the specific ingredient quantities per item & variant)
+*/

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>CommonBrew POS - Ingredients</title>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --danger: #ef476f;
+            --gray: #6c757d;
+            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            font-family: system-ui, sans-serif;
+            color: #212529;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .app-logo {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .ingredient-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .ingredient-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        .ingredient-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .ingredient-actions button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--primary);
+            margin-left: 8px;
+        }
+
+        .ingredient-actions button.delete {
+            color: var(--danger);
+        }
+
+        .add-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 400px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 20px;
+            font-size: 16px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .add-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .badge-unit {
+            background: #06d6a0;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="app-header">
+            <div class="app-logo">Inventory - Ingredients</div>
+            <div class="app-subtitle text-muted">Manage all available raw materials</div>
+        </div>
+        <a href="/inventory" class="text-decoration-none text-primary mb-3 d-block">← Back to Inventory Home</a>
+        <div class="mb-3">
+            <input type="text" id="ingredientSearch" class="form-control" placeholder="Search ingredients...">
+        </div>
+        <!-- Ingredients List -->
+        <div id="ingredientList">
+            <div class="ingredient-card" th:each="ingredient : ${ingredients}">
+                <div>
+                    <div>
+                        <span class="ingredient-name" th:text="${ingredient.name}"></span>
+                        <span class="badge-unit" th:text="${ingredient.unit}"></span>
+                    </div>
+                </div>
+                <div class="ingredient-actions">
+                    <button th:onclick="'openEditModal(' + ${ingredient.id} + ')'"><i
+                            class="bi bi-pencil-square"></i></button>
+                    <button class="delete" th:onclick="'deleteIngredient(' + ${ingredient.id} + ')'"><i
+                            class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Ingredient Button -->
+    <button class="add-btn" onclick="window.location.href='/inventory/ingredients/add'">
+        <i class="bi bi-plus-circle me-2"></i> Add Ingredient
+    </button>
+
+    <!-- 🧩 EDIT MODAL -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="editModalLabel">Edit Ingredient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editIngredientForm">
+                        <input type="hidden" id="edit-id">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" id="edit-name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unit</label>
+                            <input type="text" id="edit-unit" class="form-control" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" id="edit-active" class="form-check-input">
+                            <label for="edit-active" class="form-check-label">Active</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Optional: CSRF header from meta (Spring Security)
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+        const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+
+        function openEditModal(id) {
+            console.log("=== openEditModal START ===");
+            console.log("Ingredient ID:", id);
+
+            fetch(`/inventory/ingredients/${id}`)
+                .then(response => {
+                    console.log("Response status:", response.status);
+                    console.log("Response headers:", [...response.headers.entries()]);
+
+                    if (!response.ok) {
+                        throw new Error(`Server responded with status ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Fetched ingredient data:", data);
+
+                    if (!data || !data.id) {
+                        throw new Error("Invalid ingredient data received");
+                    }
+
+                    document.getElementById('edit-id').value = data.id;
+                    document.getElementById('edit-name').value = data.name;
+                    document.getElementById('edit-unit').value = data.unit;
+                    document.getElementById('edit-active').checked = data.active;
+
+                    console.log("Form fields populated successfully");
+                    editModal.show();
+                })
+                .catch(error => {
+                    console.error("Error fetching ingredient data:", error);
+                    alert("Failed to load ingredient data.");
+                })
+                .finally(() => {
+                    console.log("=== openEditModal END ===");
+                });
+        }
+
+        document.getElementById('editIngredientForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('edit-id').value,
+                name: document.getElementById('edit-name').value,
+                unit: document.getElementById('edit-unit').value,
+                active: document.getElementById('edit-active').checked
+            };
+
+            console.log("=== [UPDATE INGREDIENT] Sending payload ===");
+            console.log(payload);
+
+            fetch('/inventory/ingredients/update', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            }).then(resp => {
+                console.log("Response status:", resp.status);
+                if (resp.ok) {
+                    console.log("Ingredient updated successfully");
+                    editModal.hide();
+                    location.reload();
+                } else {
+                    console.error("Failed to update ingredient, server returned status:", resp.status);
+                    alert("Failed to update ingredient.");
+                }
+            }).catch(err => {
+                console.error("Fetch error:", err);
+                alert("Network or server error while updating ingredient.");
+            });
+        });
+
+        function deleteIngredient(id) {
+            if (confirm("Are you sure you want to delete this ingredient?")) {
+
+                const deleteHeaders = {};
+                if (csrfToken && csrfHeader) deleteHeaders[csrfHeader] = csrfToken;
+
+                fetch(`/inventory/ingredients/delete/${id}`, {
+                    method: 'DELETE',
+                    headers: deleteHeaders
+                })
+                    .then(resp => resp.ok ? location.reload() : alert("Failed to delete."))
+                    .catch(() => alert("Error deleting ingredient."));
+            }
+        }
+
+        // Case-insensitive search for ingredient cards
+        const searchInput = document.getElementById('ingredientSearch');
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const cards = document.querySelectorAll('#ingredientList .ingredient-card');
+
+            cards.forEach(card => {
+                const name = card.querySelector('.ingredient-name')?.textContent.toLowerCase() || '';
+                const unit = card.querySelector('.badge-unit')?.textContent.toLowerCase() || '';
+                if (name.includes(query) || unit.includes(query)) {
+                    card.style.display = 'flex'; // show
+                } else {
+                    card.style.display = 'none'; // hide
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>
