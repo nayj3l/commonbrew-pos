@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CommonBrew POS - Add Recipe</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif; padding: 20px; }
+        .app-header { text-align: center; margin-bottom: 20px; }
+        .app-logo { font-size: 26px; font-weight: 700; color: #4361ee; }
+        .app-subtitle { font-size: 14px; color: #6c757d; }
+        .form-container { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 600px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        .back-btn { margin-top: 15px; display: inline-block; text-decoration: none; color: #4361ee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="app-header">
+        <div class="app-logo">Add Recipe</div>
+        <div class="app-subtitle">Create new recipe for item & variant</div>
+    </div>
+
+    <div class="form-container">
+        <form th:action="@{/inventory/recipes/save}" th:object="${recipe}" method="post">
+            <div class="form-group">
+                <label>Menu Item</label>
+                <select class="form-select" th:field="*{item}" required>
+                    <option th:each="item : ${items}" th:value="${item}" th:text="${item.name}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Variant</label>
+                <select class="form-select" th:field="*{variant}" required>
+                    <option th:each="variant : ${variants}" th:value="${variant}" th:text="${variant.variantName}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Ingredient</label>
+                <select class="form-select" th:field="*{ingredient}" required>
+                    <option th:each="ing : ${ingredients}" th:value="${ing}" th:text="${ing.name}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" step="0.01" class="form-control" th:field="*{quantity}" required/>
+            </div>
+
+            <div class="form-group">
+                <label>Unit</label>
+                <input type="text" class="form-control" th:field="*{unit}" required/>
+            </div>
+
+            <div class="form-group">
+                <label>Instruction (optional)</label>
+                <input type="text" class="form-control" th:field="*{instruction}"/>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Save Recipe</button>
+            <a href="/inventory/recipes/list" class="back-btn">← Back to Recipe List</a>
+        </form>
+    </div>
+</div>
+</body>
+</html>

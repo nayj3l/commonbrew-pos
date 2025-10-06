@@ -20,8 +20,15 @@ public class SecurityConfig {
             // Authorize requests - static resources + login page must be public
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/css/**", "/js/**", "/images/**", "/webjars/**", // static
-                    "/login", "/h2-console/**", "/error" // public endpoints
+                    "/css/**", 
+                    "/js/**", 
+                    "/images/**", 
+                    "/logo.png",
+                    "/favicon.ico",
+                    "/webjars/**",
+                    "/login", 
+                    "/h2-console/**", 
+                    "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

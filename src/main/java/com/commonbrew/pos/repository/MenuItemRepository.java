@@ -9,10 +9,10 @@ import com.commonbrew.pos.model.MenuItem;
 
 public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
 
-    @Query("SELECT m FROM MenuItem m WHERE m.menu.id = :menuId AND m.active = true")
+    @Query("SELECT m FROM MenuItem m WHERE m.menu.id = :menuId AND m.active = true ORDER BY m.name ASC")
     List<MenuItem> findByMenuId(Long menuId);
 
-    @Query("SELECT m FROM MenuItem m WHERE m.active = true")
+    @Query("SELECT m FROM MenuItem m WHERE m.active = true ORDER BY m.name ASC")
     List<MenuItem> findAllActive();
 
     List<MenuItem> findByMenuName(String menuName);

@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.commonbrew.pos.model.Ingredient;
+import com.commonbrew.pos.model.Recipe;
 import com.commonbrew.pos.service.IngredientService;
+import com.commonbrew.pos.service.MenuItemService;
+import com.commonbrew.pos.service.MenuVariantService;
 import com.commonbrew.pos.service.RecipeService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,8 +29,10 @@ import lombok.extern.slf4j.Slf4j;
 public class InventoryController {
 
     private final IngredientService ingredientService;
+    private final MenuItemService menuItemService;
+    private final MenuVariantService menuVariantService;
     private final RecipeService recipeService;
-
+    
     @GetMapping
     public String inventoryHome() {
         return "inventory/inventory";
@@ -100,8 +105,29 @@ public class InventoryController {
 
     @GetMapping("/recipes")
     public String showRecipes(Model model) {
-        model.addAttribute("recipes", recipeService.getAll());
+        model.addAttribute("recipes", recipeService.findAll());
         return "inventory/inventory-recipes";
+    }
+
+    @GetMapping("/list")
+    public String listRecipes(Model model) {
+        model.addAttribute("recipes", recipeService.findAll());
+        return "inventory-recipes-list";
+    }
+
+    @GetMapping("/new")
+    public String newRecipe(Model model) {
+        model.addAttribute("recipe", new Recipe());
+        model.addAttribute("items", menuItemService.getAllActiveEntities());
+        model.addAttribute("variants", menuVariantService.findAllActiveVariants());
+        model.addAttribute("ingredients", ingredientService.getAllActive());
+        return "inventory-recipes-new";
+    }
+
+    @PostMapping("/save")
+    public String saveRecipe(@ModelAttribute Recipe recipe) {
+        recipeService.save(recipe);
+        return "redirect:/inventory/recipes/list";
     }
 }
 

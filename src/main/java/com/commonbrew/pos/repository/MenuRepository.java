@@ -10,16 +10,14 @@ import org.springframework.data.repository.query.Param;
 import com.commonbrew.pos.model.Menu;
 
 public interface MenuRepository extends JpaRepository<Menu, Long> {
+
     boolean existsByCode(String code);
 
     List<Menu> findByActiveTrue();
 
     Optional<Menu> findByIdAndActiveTrue(Long id);
 
-    @Query("SELECT DISTINCT m FROM Menu m " +
-        "LEFT JOIN FETCH m.items i " +
-        "LEFT JOIN FETCH m.variants v " +
-        "WHERE m.active = true")
+   @Query("SELECT m FROM Menu m WHERE m.active = true")
     List<Menu> findAllActiveMenus();
 
     @Query("SELECT DISTINCT m FROM Menu m " +

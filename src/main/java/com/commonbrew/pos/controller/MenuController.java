@@ -39,7 +39,7 @@ public class MenuController {
 
     @GetMapping()
     public String showMenu(Model model) {
-        List<MenuResponse> menu = menuService.getAllMenu();
+        List<MenuResponse> menu = menuService.getAllMenu().getMenus();
         model.addAttribute("menu", menu);
         return "menu";
     }
@@ -47,7 +47,7 @@ public class MenuController {
     @GetMapping("/add")
     public String showAddMenuForm(Model model) {
         List<MenuVariant> allActiveVariants = menuVariantService.findAllActiveVariants();
-        List<String> existingMenuNames = menuService.getAllMenu().stream()
+        List<String> existingMenuNames = menuService.getAllMenu().getMenus().stream()
                 .map(menu -> menu.getName().toLowerCase())
                 .toList();
 
@@ -106,7 +106,7 @@ public class MenuController {
 
     @GetMapping("/{id}")
     public String showMenuItems(@PathVariable Long id, Model model) {
-        MenuResponse menu = menuService.getMenuById(id);
+        MenuResponse menu = menuService.getMenuById(id).getMenu();
         model.addAttribute("menu", menu);
         model.addAttribute("menuItems", menu.getItems());
         model.addAttribute("variants", menu.getVariants());
@@ -118,9 +118,9 @@ public class MenuController {
         Menu menu = menuService.getActiveMenuById(id);
         List<MenuVariantResponse> allVariants = menuVariantService.getAllVariants();
         List<Long> selectedVariants = menu.getVariants().stream()
-            .map(MenuVariant::getVariantId)
-            .toList();
-    
+                .map(MenuVariant::getVariantId)
+                .toList();
+
         MenuUpdateRequest menuUpdateRequest = new MenuUpdateRequest();
         menuUpdateRequest.setMenuId(menu.getId());
         menuUpdateRequest.setName(menu.getName());
@@ -130,7 +130,7 @@ public class MenuController {
         model.addAttribute("menuUpdateRequest", menuUpdateRequest);
         model.addAttribute("allVariants", allVariants);
         model.addAttribute("selectedVariants", selectedVariants);
-        
+
         return "menu-edit";
     }
 
@@ -155,7 +155,7 @@ public class MenuController {
     // Show form to add a new menu item
     @GetMapping("{menuId}/item/add")
     public String addItemForm(@PathVariable Long menuId, Model model) {
-        MenuResponse menu = menuService.getMenuById(menuId);
+        MenuResponse menu = menuService.getMenuById(menuId).getMenu();
         model.addAttribute("menu", menu);
         model.addAttribute("item", new MenuItem());
         return "menu-item-save";
@@ -164,7 +164,7 @@ public class MenuController {
     // Show form to edit a item
     @GetMapping("/{menuId}/item/edit/{itemId}")
     public String editItemForm(@PathVariable Long menuId, @PathVariable Long itemId, Model model) {
-        MenuResponse menu = menuService.getMenuById(menuId);
+        MenuResponse menu = menuService.getMenuById(menuId).getMenu();
         model.addAttribute("menu", menu);
         model.addAttribute("variants", menu.getVariants());
         model.addAttribute("item", menu.getItems()
@@ -186,7 +186,7 @@ public class MenuController {
     @GetMapping("/{menuId}/item/delete/{itemId}")
     public String deleteItem(@PathVariable Long menuId, @PathVariable Long itemId) {
         itemService.deleteItem(itemId);
-        return "redirect:/menu";
+        return "redirect:/menu/" + menuId;
     }
 
 }

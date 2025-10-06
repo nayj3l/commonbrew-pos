@@ -35,10 +35,8 @@ import com.commonbrew.pos.dto.OrderConfirmSummaryResponse;
 import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
-import com.commonbrew.pos.service.AddonService;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
-import com.commonbrew.pos.service.MenuVariantService;
 import com.commonbrew.pos.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -51,17 +49,24 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderController {
 
     private final MenuItemService itemService;
-    private final AddonService addonService;
     private final OrderService orderService;
     private final MenuService menuService;
-    private final MenuVariantService variantService;
 
     @GetMapping
     public String showOrderPage(Model model) {
-        List<MenuResponse> menu = menuService.getAllMenu();
-        List<MenuItemResponse> menuItems = itemService.getAllItems();
-        List<AddonResponse> addons = addonService.getAllAddons();
-        List<MenuVariantResponse> variants = variantService.getAllVariants();
+        List<MenuResponse> menu = menuService.getAllMenu().getMenus();
+
+        List<MenuItemResponse> menuItems = menu.stream()
+                .flatMap(m -> m.getItems().stream())
+                .toList();
+
+        List<AddonResponse> addons = menu.stream()
+                .flatMap(m -> m.getAddons().stream())
+                .toList();
+
+        List<MenuVariantResponse> variants = menu.stream()
+                .flatMap(m -> m.getVariants().stream())
+                .toList();
 
         model.addAttribute("menu", menu);
         model.addAttribute("items", menuItems);
@@ -70,18 +75,6 @@ public class OrderController {
 
         return "order";
     }
-
-    // @GetMapping("/items/{itemId}/variants")
-    // @ResponseBody
-    // public List<MenuVariantDto> getVariantsByMenuItem(@PathVariable Long itemId)
-    // {
-    // MenuItem item = itemService.getItemById(itemId);
-
-    // return item.getVariants().stream()
-    // .map(v -> new MenuVariantDto(v.getVariantId(), v.getMenuItem().getId(),
-    // v.getVariantName(), v.getPrice()))
-    // .collect(Collectors.toList());
-    // }
 
     @GetMapping("/items/{menuId}")
     @ResponseBody
@@ -116,9 +109,12 @@ public class OrderController {
         log.info("Payment method: {}", paymentMethod);
         log.info("Unpaid reason: {}", unpaidReason);
 
-        if (addonItemIds == null) addonItemIds = new ArrayList<>();
-        if (addonIds == null) addonIds = new ArrayList<>();
-        if (addonQuantities == null) addonQuantities = new ArrayList<>();
+        if (addonItemIds == null)
+            addonItemIds = new ArrayList<>();
+        if (addonIds == null)
+            addonIds = new ArrayList<>();
+        if (addonQuantities == null)
+            addonQuantities = new ArrayList<>();
 
         if (itemIds == null || variantIds == null || quantities == null) {
             throw new IllegalArgumentException("itemIds, variantIds, and quantities are all required");

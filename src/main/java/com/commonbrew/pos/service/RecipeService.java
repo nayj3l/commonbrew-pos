@@ -15,7 +15,7 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepository;
 
-    public List<Recipe> getAll() {
+    public List<Recipe> findAll() {
         return recipeRepository.findAll();
     }
 

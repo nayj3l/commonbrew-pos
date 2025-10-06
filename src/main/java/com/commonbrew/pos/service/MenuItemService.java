@@ -31,6 +31,12 @@ public class MenuItemService {
                 .toList();
     }
 
+    @Cacheable("menuItemsEntities")
+    public List<MenuItem> getAllActiveEntities() {
+        return itemRepository.findAllActive();
+    }
+
+
     @Cacheable(value = "menuItemsByMenu", key = "#menuId")
     public List<MenuItem> getMenuItemsByMenuId(Long menuId) {
         return itemRepository.findByMenuId(menuId);
@@ -42,7 +48,7 @@ public class MenuItemService {
                 .orElseThrow(() -> new EntityNotFoundException("MenuItem not found with id " + id));
     }
 
-    @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
+    @CacheEvict(value = {"menus", "menu", "menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
     public MenuItem saveItem(Long menuId, MenuItem menuItem) {
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid menu ID: " + menuId));
@@ -56,7 +62,7 @@ public class MenuItemService {
         return itemRepository.save(menuItem);
     }
 
-    @CacheEvict(value = {"menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
+    @CacheEvict(value = {"menus", "menu", "menuItems", "menuItemsByMenu", "menuItem"}, allEntries = true)
     public void deleteItem(Long id) {
         MenuItem item = itemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid item ID: " + id));
