@@ -62,11 +62,11 @@ function loadVariants(button) {
         // Display variant buttons
         variants.forEach((variant) => {
             const wrapperHTML = `
-                <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
+                <div class="variant-item-row d-flex justify-content-between align-items-center border rounded p-2 mb-2">
                     <!-- LEFT panel (variant name + price + controls) -->
-                    <div class="d-flex flex-column">
+                    <div class="variant-item-label-wrapper d-flex flex-column">
                         <!-- Variant label (name + base price) -->
-                        <div>${variant.variantName} (₱${variant.price.toFixed(2)})</div>
+                        <div class="variant-item-label">${variant.variantName} (₱${variant.price.toFixed(2)})</div>
                         <!-- Controls row -->
                         <div class="d-flex align-items-center mt-1">
                             <button class="btn btn-sm btn-danger d-flex align-items-center 
@@ -116,12 +116,14 @@ function loadVariants(button) {
             plusBtn.onclick = () => {
                 qtyInput.value = parseInt(qtyInput.value) + 1;
                 updateTotal();
+                updateAddToOrderBtn();
             };
 
             minusBtn.onclick = () => {
                 if (parseInt(qtyInput.value) > 0) {
                     qtyInput.value = parseInt(qtyInput.value) - 1;
                     updateTotal();
+                    updateAddToOrderBtn();
                 }
             };
 
@@ -294,4 +296,23 @@ function renderOrderModal() {
     panel.innerHTML = html;
     calculateTotal();
     document.getElementById("modal-order-total").textContent = currentOrder.total.toFixed(2);
+}
+
+
+// Helper: update Add to Order button text and disabled state
+function updateAddToOrderBtn() {
+    const modalBody = document.getElementById("variantModalBody");
+    const qtyInputs = modalBody.querySelectorAll('.qty-input');
+    const addToOrderBtn = document.getElementById("addVariantBtn");
+
+    let total = 0;
+    qtyInputs.forEach(input => {
+        total += parseInt(input.value, 10) || 0;
+    });
+
+    console.log(total)
+    addToOrderBtn.textContent = `Add to Order (${total}x)`;
+    if (total == 0) {
+        addToOrderBtn.textContent = `Add to Order`;
+    }
 }

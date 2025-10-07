@@ -38,7 +38,7 @@ function loadItems(menuId) {
             itemDiv.className = "mb-2";
 
             const flavorBtn = document.createElement("button");
-            flavorBtn.className = "btn btn-outline-success item-btn";
+            flavorBtn.className = "btn item-btn";
             flavorBtn.textContent = item.name;
             flavorBtn.dataset.itemId = item.id;
             flavorBtn.dataset.itemPrice = item.basePrice;

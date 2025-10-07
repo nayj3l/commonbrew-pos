@@ -39,8 +39,8 @@
 }
 
 .btn-sm {
-    padding: 0.15rem 0.4rem;
-    font-size: 0.7rem;
+    /* padding: 0.15rem 0.4rem; */
+    /* font-size: 0.7rem; */
 }
 
 .order-item .btn {
@@ -56,11 +56,6 @@
 
 #itemsModalBody .mb-2 {
     margin-bottom: 0 !important;
-}
-
-#itemsModalBody .btn {
-    width: 100%;
-    padding: 16px;
 }
 
 .quantity-controls {
@@ -80,16 +75,6 @@
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     border: none;
-}
-
-#itemsModal .modal-header {
-    background: linear-gradient(135deg, var(--primary), var(--primary-light));
-    color: white;
-    border-bottom: none;
-    padding: 20px 25px;
-    text-align: center;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
 }
 
 #itemsModal .modal-title {
@@ -112,20 +97,23 @@
 
 /* Item buttons */
 #itemsModalBody .btn {
+    transition: var(--transition);
     width: 100%;
     padding: 16px 20px;
     font-size: 16px;
     font-weight: 600;
-    border-radius: 14px;
-    cursor: pointer;
-    text-align: center;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    /* box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08); */
     white-space: normal;
+    border: 1px solid var(--brown);
+    color: var(--brown);
 }
 
 /* Hover / Active / Selected */
 #itemsModalBody .btn:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    color: white;
+    background: var(--hover);
+    border: 1px solid var(--primary);
 }
 
 #itemsModalBody .btn.active {
@@ -293,15 +281,17 @@
     padding: 12px;
     text-align: center;
     background: #F9F5F0;
-    border-radius: 12px;
     font-weight: bold;
     font-size: 1.2em;
-    border: 2px dashed #FAA533 !important;
-    margin: 1rem !important;
+    /* border-radius: 12px; */
+    /* border: 2px dashed #FAA533 !important; */
+    /* margin: 1rem !important; */
 }
 
 #orderConfirmModal .order-confirm-header {  
-    background: #FA812F !important;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-bottom: none;
 }
 
 #orderConfirmModal .modal-footer > * {
@@ -318,28 +308,34 @@
 
 #orderConfirmModal .modal-footer .btn {
     font-size: 16px;
-    padding: 14px 0;
-    border-radius: 12px;
+    padding: 12px 0;
     width: 100%;
+    border-color: transparent !important;
 }
 
 #orderConfirmModal .btn-success {
-    background: linear-gradient(to right, var(--success), var(--primary));
-    color: white;
+    background: transparent;
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+#orderConfirmModal .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
 }
 
 #orderConfirmModal .order-cancel-btn {
-    border-color: #e1efff;
-    background: #e1efff;
-    color: grey;
-    transition: all .2s ease;
+    background: var(--danger);
+    color: white;
+    transition: var(--transition);
 }
 
 #orderConfirmModal .order-confirm-btn {
-    border-color: #F2EAD3;
-    background: #FA812F;
+    border-color: white;
+    background: var(--success);
     color: white;
-    transition: all .2s ease;
+    transition: aar(--transition);
 }
 
 #orderConfirmModal .btn:hover {
@@ -367,26 +363,25 @@
     left: 0;
     right: 0;
     background: white;
-    padding: 1rem;
+    padding: 10px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     border-radius: var(--bs-border-radius);
     height: 110px;
     z-index: 1000;
-    transition: transform 0.3s ease; /* smooth entry */
+    transition: var(--transition)
 }
 
 .cart-btn {
     width: 100%;
     height: 100%;
     padding: 16px;
-    font-size: 1.2rem;
     font-weight: bold;
     color: #F9F5F0;            /* text color */
     background-color: #FA812F; /* accent */
     border: none;
-    display: flex;
-    justify-content: space-between; /* total aligned to right */
-    align-items: center;
+    /* display: flex; */
+    /* justify-content: space-between; */
+    /* align-items: center; */
     transition: transform 0.3s cubic-bezier(0.25, 1.5, 0.5, 1), 
                 background-color 0.3s ease, 
                 color 0.3s ease;
@@ -401,6 +396,12 @@
 }
 
 .cart-btn span#order-total {
-    font-weight: normal;
-    font-size: 1.2rem;
+    /* font-weight: normal; */
+}
+
+.add-to-cart {
+    background: var(--beige);
+    color: var(--bs-secondary-color);
+    border-radius: 3px;
+    padding: 3px 0;
 }

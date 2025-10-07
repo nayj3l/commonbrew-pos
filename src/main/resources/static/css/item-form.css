@@ -1,30 +1,3 @@
-:root {
-    --primary: #4361ee;
-    --primary-light: #4895ef;
-    --secondary: #3a0ca3;
-    --success: #4cc9f0;
-    --warning: #f9c74f;
-    --light: #f8f9fa;
-    --dark: #212529;
-    --gray: #6c757d;
-    --border-radius: 16px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.modal-header {
-    background: linear-gradient(135deg, var(--primary), var(--primary-light));
-    color: white;
-    border-bottom: none;
-    padding: 20px;
-}
-
 .modal-title {
     font-weight: 700;
     font-size: 20px;
@@ -76,21 +49,38 @@
     gap: 1rem;
 }
 
-#variantModalBody > div {
-    margin-bottom: 0 !important;
+#variantModalBody>div {
+    transition: var(--transition);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+}
+
+.variant-item-label-wrapper .variant-item-label {
+    margin-bottom: 10px;
+}
+
+#variantModalBody>div:hover {
+    box-shadow: var(--shadow);
+    background: var(--hover);
+    color: white;
+}
+
+.bi::before {
+    /* color: var(--primary); */
 }
 
 #variantModal .custom-hr {
-  width: 75%;
-  border: none;
-  height: 1px;
-  border-top: 2px solid #dee2e6;
-  margin: 0 !important;
-  opacity: 0.45 !important;
+    width: 75%;
+    border: none;
+    height: 1px;
+    border-top: 2px solid #dee2e6;
+    margin: 0 !important;
+    opacity: 0.45 !important;
 }
 
 #variantModalBody .btn:active {
-    transform: translateY(0) scale(0.98); /* simulate press down */
+    transform: translateY(0) scale(0.98);
+    /* simulate press down */
     box-shadow: 0 2px 6px rgba(67, 97, 238, 0.2);
 }
 
@@ -100,15 +90,8 @@
     box-shadow: 0 6px 12px rgba(67, 97, 238, 0.5);
 }
 
-#variantModalBody .btn {
-    padding: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    gap: 8px;
-}
-
 .order.container {
-  min-height: 100vh;
+    min-height: 100vh;
 }
 
 /* Responsive adjustments */
@@ -135,8 +118,6 @@
     border-bottom: none;
     padding: 20px 25px;
     text-align: center;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
 }
 
 #variantModal .modal-title {
@@ -158,19 +139,30 @@
     padding: 6px 10px;
     font-size: 16px;
     font-weight: 600;
-    border-radius: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    transition: var(--transition);
+    /* box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08); */
 }
 
 .quantity-controls .btn {
-    padding: 0 !important;
+    /* padding: 0 !important; */
 }
 
 #variantModalBody .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.variant-item-row .btn{
+    background: transparent !important;
+}
+
+.variant-item-row .bi-plus {
+    color: var(--success);
+}
+
+.variant-item-row .bi-dash {
+    color: var(--danger);
 }
 
 /* Active / Selected Variant */
@@ -180,26 +172,19 @@
     box-shadow: 0 6px 16px rgba(76, 201, 240, 0.3);
 }
 
-#addonOptions .btn-danger {
-    border-radius: 14px 0 0 14px;
-}
-
 #addonOptions .btn-success {
     border-radius: 0 14px 14px 0;
 }
 
 #variantModal .btn-success {
-    background: linear-gradient(to right, var(--success), #3a86ff);
-    color: white;
-    font-weight: 700;
+    background: var(--success);
 }
 
 #variantModal .btn-success:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(76, 201, 240, 0.3);
 }
 
-.variant-total{
+.variant-total {
     display: inline-block;
     min-width: 80px;
     max-width: 120px;
@@ -207,43 +192,30 @@
     white-space: nowrap;
 }
 
-#variantModalBody > div {
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: all 0.1s ease;
-}
 
-#variantModalBody > div:hover {
-  box-shadow: var(--shadow);
-}
-
-#variantModalBody > div:active,
-#variantModalBody > div.active {
-  background-color: var(--primary);
-  color: white;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+#variantModalBody>div:active,
+#variantModalBody>div.active {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 #variantModalBody input[type="number"] {
-  pointer-events: none;
-  font-size: 16px;
+    pointer-events: none;
+    font-size: 16px;
 }
 
 
 /* Modal footer buttons */
-#variantModal .modal-footer .btn-success {
-    border-radius: 0.5rem;
-    padding: 20px 25px;
-    display: flex;
-    gap: 12px;
-    padding: 0.5rem 1rem;
+#variantModal .modal-footer .btn {
     justify-content: center;
+    padding: 12px;
 }
 
 
 /* Make modal dialog full height */
 .modal-dialog {
-  max-width: 100%;
+    max-width: 100%;
 }
 
 /* Modal content as column flex container */
@@ -254,34 +226,30 @@
     margin: 10px;
 }
 
-/* Header stays at top */
-.modal-header {
-  flex-shrink: 0;
-}
-
 /* Body scrolls if content overflows */
 .modal-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  /* padding-bottom: 1rem; space before footer */
+    flex: 1 1 auto;
+    overflow-y: auto;
+    /* padding-bottom: 1rem; space before footer */
 }
 
 /* Footer sticks at bottom */
 .modal-footer {
-  flex-shrink: 0;            /* never shrink */
-  border-top: 1px solid #dee2e6;
-  padding: 1rem;
-  background: white;
+    flex-shrink: 0;
+    /* never shrink */
+    border-top: 1px solid #dee2e6;
+    padding: 1rem;
+    background: white;
 }
 
 /* Optional: make buttons full width on mobile */
 .modal-footer .btn {
-  flex: 1;
+    flex: 1;
 }
 
-#addVariantBtn, .modal-footer.d-flex .btn-danger {
+#addVariantBtn,
+.modal-footer.d-flex .btn-danger {
     font-weight: 600 !important;
-    font-size: 18px;
 }
 
 

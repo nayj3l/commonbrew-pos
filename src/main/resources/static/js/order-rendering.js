@@ -15,9 +15,32 @@ function calculateTotal() {
     }
 
     currentOrder.total = total;
-    
-    document.getElementById("order-total").textContent =
-        `₱${currentOrder.total.toFixed(2)}`;
+
+    // Format currency (PH peso)
+    const formatted = new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(currentOrder.total);
+
+    // Update total display
+    const totalEl = document.getElementById("order-total");
+    if (totalEl) totalEl.textContent = formatted;
+
+    // Update cart message + color
+    const noteEl = document.querySelector('.add-to-cart');
+    if (noteEl) {
+        if (total > 0) {
+            noteEl.innerHTML = `<i class="bi bi-bag-check me-1"></i> Proceed to checkout`;
+            noteEl.style.color = 'var(--success)';
+        } else {
+            noteEl.innerHTML = `<i class="bi bi-cart-x me-1"></i> There are no items in your cart`;
+            noteEl.style.color = 'var(--bs-secondary-color)'
+        }
+    }
+
+    // Optional: dispatch event for other listeners
+    totalEl?.dispatchEvent(new CustomEvent('orderTotalChanged', { detail: { total } }));
+
     return total;
 }
 
@@ -41,23 +64,27 @@ function renderModalOrder() {
                             <span class="mx-2">${item.quantity}</span>
                             <button class="btn btn-sm btn-success" onclick="incrementItem(${item.itemId})"><i class="bi bi-plus"></i></button>
                         </div>
-                        <span class="ms-3">${item.itemName}</span>
-                        <div>₱${(item.itemPrice * item.quantity).toFixed(2)}</div>
+                        <div class="d-flex flex-grow-1 justify-content-between align-items-center">
+                            <span class="ms-3">${item.itemName}</span>
+                            <div>₱${(item.itemPrice * item.quantity).toFixed(2)}</div>
+                        </div>
                     </div>
                 </div>`;
     });
 
     // Show global addons
+    //  <div class="quantity-controls">
+    //                         <button class="btn btn-sm btn-danger" onclick="decrementAddon(${addon.addonId})"><i class="bi bi-dash"></i></button>
+    //                         <span class="mx-2">${addon.quantity}</span>
+    //                         <button class="btn btn-sm btn-success" onclick="incrementAddon(${addon.addonId})"><i class="bi bi-plus"></i></button>
+    //                     </div>
     currentOrder.addons.forEach(addon => {
         html += `<div class="modal-order-item ms-4">
                     <div class="d-flex align-items-center">
-                        <div class="quantity-controls">
-                            <button class="btn btn-sm btn-danger" onclick="decrementAddon(${addon.addonId})"><i class="bi bi-dash"></i></button>
-                            <span class="mx-2">${addon.quantity}</span>
-                            <button class="btn btn-sm btn-success" onclick="incrementAddon(${addon.addonId})"><i class="bi bi-plus"></i></button>
+                        <div class="d-flex flex-grow-1 justify-content-between align-items-center">
+                            <span class="ms-3">${addon.addonName}</span>
+                            <div>₱${(addon.price * addon.quantity).toFixed(2)}</div>
                         </div>
-                        <span class="ms-3">${addon.addonName}</span>
-                        <div>₱${(addon.price * addon.quantity).toFixed(2)}</div>
                     </div>
                 </div>`;
     });
