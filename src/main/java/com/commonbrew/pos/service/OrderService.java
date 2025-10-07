@@ -165,13 +165,15 @@ public class OrderService {
             int quantity = quantities.get(i);
 
             // Fetch MenuItem
-            MenuItem item = menuItemRepository.getReferenceById(itemId);
+            MenuItem item = menuItemRepository.findById(itemId)
+                    .orElseThrow(() -> new RuntimeException("MenuItem not found: " + itemId));
 
             // Get Menu from item
             Menu menu = item.getMenu();
 
             // Fetch Variant
-            MenuVariant variant = variantRepository.getReferenceById(variantId);
+            MenuVariant variant = variantRepository.findById(variantId)
+                    .orElseThrow(() -> new RuntimeException("MenuVariant not found: " + variantId));
 
             BigDecimal unitPrice = BigDecimal.valueOf(variant.getPrice());
             BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
