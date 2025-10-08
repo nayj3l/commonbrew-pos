@@ -179,11 +179,8 @@ public class OrderController {
     @GetMapping("/history")
     public String showOrderHistory(
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-
             @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-
             Model model) {
-
         List<Order> orders;
 
         if (fromDate != null && toDate != null) {

@@ -28,11 +28,9 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
 
     @ManyToOne
-    @JoinColumn(name = "item_id", nullable = false)
     private MenuItem item;
 
     @ManyToOne
