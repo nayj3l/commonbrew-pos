@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,11 +42,11 @@ public class OrderService {
 
     @Transactional
     public Order createOrder(
-            List<Long> itemIds,
+            List<Long> menuItemIds,
             List<Long> variantIds,
             List<Integer> quantities,
-            List<List<Long>> addonIdsList, // optional: list of addon IDs per variant
-            List<List<Integer>> addonQuantitiesList, // optional: quantities of addons per variant
+            List<Long> addonIds,
+            List<Integer> addonQuantities,
             PaymentOption paymentOption,
             String unpaidReason,
             String barista) {
@@ -60,59 +61,89 @@ public class OrderService {
         double totalAmount = 0;
         List<OrderItem> orderItems = new ArrayList<>();
 
-        for (int i = 0; i < itemIds.size(); i++) {
-            Long itemId = itemIds.get(i);
+        // Defensive defaults
+        if (menuItemIds == null)
+            menuItemIds = Collections.emptyList();
+        if (variantIds == null)
+            variantIds = Collections.emptyList();
+        if (quantities == null)
+            quantities = Collections.emptyList();
+
+        for (int i = 0; i < menuItemIds.size(); i++) {
+            Long menuItemId = menuItemIds.get(i);
             Long variantId = variantIds.get(i);
             Integer quantity = quantities.get(i);
 
-            MenuItem menuItem = menuItemRepository.findById(itemId)
-                    .orElseThrow(() -> new RuntimeException("MenuItem not found: " + itemId));
+            Menu menu = menuRepository.findMenuByMenuItemId(menuItemId)
+                    .orElseThrow(() -> new RuntimeException("Menu not found for MenuItem: " + menuItemId));
 
-            Menu menu = menuRepository.findMenuByMenuItemId(itemId)
-                    .orElseThrow(() -> new RuntimeException("Menu not found for MenuItem: " + itemId));
+            MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                    .orElseThrow(() -> new RuntimeException("MenuItem not found: " + menuItemId));
 
-            // Get variant
             MenuVariant variant = variantRepository.findById(variantId)
                     .orElseThrow(() -> new RuntimeException("Variant not found: " + variantId));
 
             // Create main order item (the chosen variant)
             OrderItem orderItem = new OrderItem();
+            orderItem.setMenu(menu);
             orderItem.setItem(menuItem);
             orderItem.setVariant(variant);
             orderItem.setQuantity(quantity);
+            orderItem.setMenuItemNameSnapshot("(" + menu.getName() + ") " + menuItem.getName());
             orderItem.setVariantNameSnapshot(variant.getVariantName());
             orderItem.setUnitPriceSnapshot(variant.getPrice());
-            orderItem.setMenuItemNameSnapshot("(" + menu.getName() + ") " + menuItem.getName());
             orderItem.setSubtotal(variant.getPrice() * quantity);
             orderItem.setOrder(order);
             orderItems.add(orderItem);
 
             totalAmount += orderItem.getSubtotal();
+        }
 
-            // Handle optional addons for this variant
-            if (addonIdsList != null && addonIdsList.size() > i && addonIdsList.get(i) != null) {
-                List<Long> addonIds = addonIdsList.get(i);
-                List<Integer> addonQuantities = addonQuantitiesList.get(i);
+        if (addonIds != null && !addonIds.isEmpty()) {
 
-                for (int j = 0; j < addonIds.size(); j++) {
-                    Long addonId = addonIds.get(j);
-                    Integer addonQty = addonQuantities.get(j);
+            if (addonQuantities == null || addonQuantities.size() != addonIds.size()) {
+                throw new IllegalArgumentException("Addon IDs and quantities lists must have the same length");
+            }
 
-                    Addon addon = addonRepository.findById(addonId)
-                            .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
+            for (int a = 0; a < addonIds.size(); a++) {
+                Long addonId = addonIds.get(a);
+                Integer addonQty = addonQuantities.get(a) == null ? 1 : addonQuantities.get(a);
 
-                    OrderItem addonItem = new OrderItem();
-                    addonItem.setVariant(variant);
-                    addonItem.setQuantity(addonQty);
-                    addonItem.setVariantNameSnapshot(addon.getAddonName());
-                    addonItem.setUnitPriceSnapshot(addon.getPrice());
-                    addonItem.setMenuItemNameSnapshot("Addon");
-                    addonItem.setSubtotal(addon.getPrice() * addonQty);
-                    addonItem.setOrder(order);
+                Addon addon = addonRepository.findById(addonId)
+                        .orElseThrow(() -> new RuntimeException("Addon not found: " + addonId));
 
-                    orderItems.add(addonItem);
-                    totalAmount += addonItem.getSubtotal();
+                // pick a representative menu for the addon (Addon has a list of menus)
+                List<Menu> addonMenus = Optional.ofNullable(addon.getMenu()).orElse(Collections.emptyList());
+                if (addonMenus.isEmpty()) {
+                    throw new RuntimeException("Addon (id=" + addonId + ") is not associated with any Menu");
                 }
+                Menu representativeMenu = addonMenus.get(0);
+
+                // find a menu item to satisfy the non-null 'item' FK (use first menu item)
+                MenuItem surrogateMenuItem = Optional.ofNullable(representativeMenu.getItems())
+                        .flatMap(set -> set.stream().findFirst())
+                        .orElseThrow(() -> new RuntimeException("No MenuItem found in Menu (id="
+                                + representativeMenu.getId() + ") for addon " + addonId));
+
+                // find a representative variant for the menu to satisfy non-null 'variant' FK
+                MenuVariant surrogateVariant = Optional.ofNullable(representativeMenu.getVariants())
+                        .flatMap(set -> set.stream().findFirst())
+                        .orElseThrow(() -> new RuntimeException("No MenuVariant found in Menu (id="
+                                + representativeMenu.getId() + ") for addon " + addonId));
+
+                OrderItem addonOrderItem = new OrderItem();
+                addonOrderItem.setMenu(representativeMenu);
+                addonOrderItem.setItem(surrogateMenuItem);
+                addonOrderItem.setVariant(surrogateVariant);
+                addonOrderItem.setQuantity(addonQty);
+                addonOrderItem.setMenuItemNameSnapshot(addon.getAddonName());
+                addonOrderItem.setVariantNameSnapshot("Addon");
+                addonOrderItem.setUnitPriceSnapshot(addon.getPrice());
+                addonOrderItem.setSubtotal(addon.getPrice() * addonQty);
+                addonOrderItem.setOrder(order);
+                orderItems.add(addonOrderItem);
+
+                totalAmount += addonOrderItem.getSubtotal();
             }
         }
 

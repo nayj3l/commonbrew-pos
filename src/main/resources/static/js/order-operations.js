@@ -192,8 +192,8 @@ function updateAddons(itemId) {
     calculateTotal();
 }
 
-function incrementItem(itemId) {
-    const item = currentOrder.items.find((item) => item.itemId == itemId);
+function incrementItem(variantId) {
+    const item = currentOrder.items.find((item) => item.variantId == variantId);
     if (item) {
         item.quantity += 1;
         calculateTotal();
@@ -201,9 +201,9 @@ function incrementItem(itemId) {
     }
 }
 
-function decrementItem(itemId) {
+function decrementItem(variantId) {
     const itemIndex = currentOrder.items.findIndex(
-        (item) => item.itemId == itemId
+        (item) => item.variantId == variantId
     );
     if (itemIndex >= 0) {
         const item = currentOrder.items[itemIndex];
@@ -217,30 +217,28 @@ function decrementItem(itemId) {
     }
 }
 
-function incrementAddon(itemId, addonId) {
-    const item = currentOrder.items.find(i => i.itemId == itemId);
-    if (!item || !item.addons) return;
-
-    const addon = item.addons.find(a => a.addonId == addonId);
+function incrementAddon(addonId) {
+    const addon = currentOrder.addons.find(addon => addon.addonId === addonId);
     if (addon) {
         addon.quantity += 1;
         calculateTotal();
         renderModalOrder();
+    } else {
+        console.warn(`Addon with ID ${addonId} not found in current order`);
     }
 }
 
-function decrementAddon(itemId, addonId) {
-    const item = currentOrder.items.find(i => i.itemId == itemId);
-    if (!item || !item.addons) return;
-
-    const addonIndex = item.addons.findIndex(a => a.addonId == addonId);
-    if (addonIndex >= 0) {
-        const addon = item.addons[addonIndex];
+function decrementAddon(addonId) {
+    const addon = currentOrder.addons.find(addon => addon.addonId === addonId);
+    
+    if (addon) {
         if (addon.quantity > 1) {
             addon.quantity -= 1;
         } else {
-            item.addons.splice(addonIndex, 1);
+            // Remove addon completely if quantity would become 0
+            currentOrder.addons = currentOrder.addons.filter(a => a.addonId !== addonId);
         }
+        
         calculateTotal();
         renderModalOrder();
     }

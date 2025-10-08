@@ -47,6 +47,16 @@ function calculateTotal() {
 
 // Render order summary in modal
 function renderModalOrder() {
+    console.log("currentOrder:", currentOrder);
+
+    console.log("=== CURRENT ORDER STATE ===");
+    console.log("Items:", currentOrder.items);
+    console.log("Addons:", currentOrder.addons);
+    console.log("Total: ₱" + currentOrder.total.toFixed(2));
+    console.log("Item count:", currentOrder.items.length);
+    console.log("Addon count:", currentOrder.addons.length);
+    console.log("========================");
+
     const panel = document.getElementById("modal-order-summary");
 
     if (currentOrder.items.length === 0) {
@@ -60,9 +70,9 @@ function renderModalOrder() {
         html += `<div class="modal-order-item">
                     <div class="d-flex align-items-center">
                         <div class="quantity-controls">
-                            <button class="btn btn-sm btn-danger" onclick="decrementItem(${item.itemId})"><i class="bi bi-dash"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="decrementItem(${item.variantId})"><i class="bi bi-dash"></i></button>
                             <span class="mx-2">${item.quantity}</span>
-                            <button class="btn btn-sm btn-success" onclick="incrementItem(${item.itemId})"><i class="bi bi-plus"></i></button>
+                            <button class="btn btn-sm btn-success" onclick="incrementItem(${item.variantId})"><i class="bi bi-plus"></i></button>
                         </div>
                         <div class="d-flex flex-grow-1 justify-content-between align-items-center">
                             <span class="ms-3">${item.itemName}</span>
@@ -73,17 +83,19 @@ function renderModalOrder() {
     });
 
     // Show global addons
-    //  <div class="quantity-controls">
-    //                         <button class="btn btn-sm btn-danger" onclick="decrementAddon(${addon.addonId})"><i class="bi bi-dash"></i></button>
-    //                         <span class="mx-2">${addon.quantity}</span>
-    //                         <button class="btn btn-sm btn-success" onclick="incrementAddon(${addon.addonId})"><i class="bi bi-plus"></i></button>
-    //                     </div>
     currentOrder.addons.forEach(addon => {
-        html += `<div class="modal-order-item ms-4">
+        html += `<div class="modal-order-item">
                     <div class="d-flex align-items-center">
+                        <div class="quantity-controls">
+                            <button class="btn btn-sm btn-danger" onclick="decrementAddon(${addon.addonId})"><i class="bi bi-dash"></i></button>
+                            <span class="mx-2">${addon.quantity}</span>
+                            <button class="btn btn-sm btn-success" onclick="incrementAddon(${addon.addonId})"><i class="bi bi-plus"></i></button>
+                        </div>
                         <div class="d-flex flex-grow-1 justify-content-between align-items-center">
-                            <span class="ms-3">${addon.addonName}</span>
-                            <div>₱${(addon.price * addon.quantity).toFixed(2)}</div>
+                            <div class="d-flex flex-grow-1 justify-content-between align-items-center">
+                                <span class="ms-3">${addon.addonName}</span>
+                                <div>₱${(addon.price * addon.quantity).toFixed(2)}</div>
+                            </div>
                         </div>
                     </div>
                 </div>`;
@@ -101,43 +113,27 @@ function confirmOrder() {
     }
 
     renderModalOrder();
-    
+
     let modal = new bootstrap.Modal(document.getElementById("orderConfirmModal"));
     modal.show();
 }
 
 // Submit the confirmed order
 function submitConfirmedOrder() {
-    const items = currentOrder.items || [];
-    const allAddons  = currentOrder.addons || [];
+    console.log("=== SUBMIT CONFIRMED ORDER ===");
+    console.log("Current order before clearing:", JSON.stringify(currentOrder, null, 2));
 
-    document.getElementById("itemIds").value = items
-        .map(i => i.itemId)
-        .join(",");
+    // Save current order temporarily
+    sessionStorage.setItem('pendingOrder', JSON.stringify(currentOrder));
+    console.log("Stored current order in sessionStorage as 'pendingOrder'.");
 
-    document.getElementById("variantsIds").value = items
-        .map(i => i.variantId)
-        .join(",");
+    // Clear the current order
+    currentOrder = { items: [], addons: [], total: 0 };
+    console.log("Cleared currentOrder object in memory:", currentOrder);
 
-    document.getElementById("quantities").value = items
-        .map(i => i.quantity)
-        .join(",");
-
-    document.getElementById("addonIds").value = allAddons
-        .map(a => a.addonId)
-        .join(",");
-
-    document.getElementById("addonQuantities").value = allAddons
-        .map(a => a.quantity)
-        .join(",");
-
-    console.log("=== FORM VALUES ===");
-    console.log("itemIds:", document.getElementById("itemIds").value);
-    console.log("variantsIds input value:", document.getElementById("variantsIds").value);
-    console.log("quantities input value:", document.getElementById("quantities").value);
-    console.log("addonIds input value:", document.getElementById("addonIds").value);
-    console.log("addonQuantities input value:", document.getElementById("addonQuantities").value);
-
-    document.getElementById("order-form").submit();
+    // Redirect to confirmation page
+    console.log("Redirecting user to /order/confirm...");
+    window.location.href = '/order/confirm';
 }
+
 

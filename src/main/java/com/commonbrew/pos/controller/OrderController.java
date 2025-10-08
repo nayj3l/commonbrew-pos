@@ -1,12 +1,10 @@
 package com.commonbrew.pos.controller;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -32,12 +30,13 @@ import com.commonbrew.pos.dto.MenuResponse;
 import com.commonbrew.pos.dto.MenuVariantResponse;
 import com.commonbrew.pos.dto.OrderConfirmSummary;
 import com.commonbrew.pos.dto.OrderConfirmSummaryResponse;
-import com.commonbrew.pos.model.Addon;
 import com.commonbrew.pos.model.MenuItem;
 import com.commonbrew.pos.model.Order;
 import com.commonbrew.pos.service.MenuItemService;
 import com.commonbrew.pos.service.MenuService;
 import com.commonbrew.pos.service.OrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,74 +83,77 @@ public class OrderController {
                 .map(item -> new MenuItemDto(
                         item.getId(),
                         item.getName()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Final order submission (redirect to success page)
     @PostMapping("/submit")
     public String submitOrder(
-            @RequestParam("itemId") List<Long> itemIds,
-            @RequestParam("variantId") List<Long> variantIds,
-            @RequestParam("quantity") List<Integer> quantities,
-            @RequestParam(required = false) List<Long> addonItemIds,
-            @RequestParam(required = false) List<Long> addonIds,
-            @RequestParam(required = false) List<Integer> addonQuantities,
+            @RequestParam String orderJson,
             @RequestParam String paymentMethod,
             @RequestParam(required = false) String unpaidReason,
             RedirectAttributes redirectAttributes) {
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        OrderConfirmSummaryResponse orderConfirmSummary;
+
+        try {
+            orderConfirmSummary = objectMapper.readValue(orderJson, OrderConfirmSummaryResponse.class);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to parse order JSON: {}", e.getMessage(), e);
+            throw new IllegalArgumentException("Invalid order data format", e);
+        }
+
+        List<OrderConfirmSummary> items = orderConfirmSummary.getItems();
+
+        List<Long> itemIds = items.stream()
+                .map(OrderConfirmSummary::getItemId)
+                .toList();
+
+        List<Long> variantIds = items.stream()
+                .map(OrderConfirmSummary::getVariantId)
+                .filter(Objects::nonNull)
+                .map(Integer::longValue)
+                .toList();
+
+        List<Integer> quantities = items.stream()
+                .map(OrderConfirmSummary::getQuantity)
+                .toList();
+
+        List<AddonConfirmSummary> addons = orderConfirmSummary.getAddons();
+
+        List<Long> addonIds = addons.stream()
+                .map(AddonConfirmSummary::getAddonId)
+                .toList();
+
+        List<Integer> addonQuantities = addons.stream()
+                .map(AddonConfirmSummary::getQuantity)
+                .toList();
+
         log.info("Received itemIds: {}", itemIds);
         log.info("Received variantIds: {}", variantIds);
         log.info("Received quantities: {}", quantities);
-        log.info("Received addonItemIds: {}", addonItemIds);
         log.info("Received addonIds: {}", addonIds);
         log.info("Received addonQuantities: {}", addonQuantities);
-        log.info("Payment method: {}", paymentMethod);
-        log.info("Unpaid reason: {}", unpaidReason);
-
-        if (addonItemIds == null)
-            addonItemIds = new ArrayList<>();
-        if (addonIds == null)
-            addonIds = new ArrayList<>();
-        if (addonQuantities == null)
-            addonQuantities = new ArrayList<>();
-
-        if (itemIds == null || variantIds == null || quantities == null) {
-            throw new IllegalArgumentException("itemIds, variantIds, and quantities are all required");
-        }
-
-        if (itemIds.isEmpty() || variantIds.isEmpty() || quantities.isEmpty()) {
-            throw new IllegalArgumentException("itemIds, variantIds, and quantities cannot be empty");
-        }
-
-        if (itemIds.size() != variantIds.size() || itemIds.size() != quantities.size()) {
-            throw new IllegalArgumentException("Each item must have a corresponding variant and quantity");
-        }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String barista = authentication.getName();
 
         PaymentOption paymentOption = PaymentOption.valueOf(paymentMethod.toUpperCase());
 
-        List<List<Long>> addonIdsList = new ArrayList<>();
-        List<List<Integer>> addonQuantitiesList = new ArrayList<>();
-
-        addonIdsList.add(addonIds);
-        addonQuantitiesList.add(addonQuantities);
-
         Order savedOrder = orderService.createOrder(
                 itemIds,
                 variantIds,
                 quantities,
-                addonIdsList,
-                addonQuantitiesList,
+                addonIds,
+                addonQuantities,
                 paymentOption,
                 unpaidReason,
                 barista);
 
         redirectAttributes.addAttribute("orderId", savedOrder.getId());
         redirectAttributes.addAttribute("totalAmount", savedOrder.getTotalAmount());
-
+        log.info("✅ Order created successfully with ID: {}", savedOrder.getId());
         return "redirect:/order/success";
     }
 
@@ -169,62 +171,8 @@ public class OrderController {
         return "order-success";
     }
 
-    @PostMapping("/confirm")
-    public String confirmOrder(
-            @RequestParam List<Integer> itemIds,
-            @RequestParam List<Integer> variantsIds,
-            @RequestParam List<Integer> quantities,
-            @RequestParam(required = false) List<Integer> addonIds,
-            @RequestParam(required = false) List<Integer> addonQuantities,
-            Model model) {
-
-        log.info("Received itemIds : {}", itemIds);
-        log.info("Received variantsIds : {}", variantsIds);
-        log.info("Received quantities: {}", quantities);
-        log.info("Received addonIds: {}", addonIds);
-        log.info("Received addonQuantities: {}", addonQuantities);
-
-        if (itemIds == null) {
-            itemIds = new ArrayList<>();
-        }
-
-        if (addonIds == null) {
-            addonIds = new ArrayList<>();
-        }
-        if (addonQuantities == null) {
-            addonQuantities = new ArrayList<>();
-        }
-
-        if (variantsIds == null || quantities == null || variantsIds.size() != quantities.size()) {
-            throw new IllegalArgumentException("itemIds and quantities are required and must have the same length");
-        }
-
-        List<OrderConfirmSummary> items = orderService.buildOrderSummary(itemIds, variantsIds, quantities);
-        List<AddonConfirmSummary> addons = new ArrayList<>();
-        if (addonIds != null) {
-            for (int i = 0; i < addonIds.size(); i++) {
-                int itemId = itemIds.get(0); // all addons belong to first item
-                int addonId = addonIds.get(i);
-                int quantity = addonQuantities.get(i);
-
-                Addon addon = orderService.getAddonById(Long.valueOf(addonId));
-                addons.add(new AddonConfirmSummary(
-                        addon.getAddonName(),
-                        (long) itemId,
-                        (long) addonId,
-                        "Addon",
-                        quantity,
-                        BigDecimal.valueOf(addon.getPrice()),
-                        BigDecimal.valueOf(addon.getPrice() * quantity)));
-            }
-        }
-
-        BigDecimal total = items.stream()
-                .map(OrderConfirmSummary::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(addons.stream().map(AddonConfirmSummary::getTotalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
-
-        model.addAttribute("orderConfirmSummary", new OrderConfirmSummaryResponse(items, addons, total));
+    @GetMapping("/confirm")
+    public String confirmOrder(Model model) {
         return "order-confirm";
     }
 

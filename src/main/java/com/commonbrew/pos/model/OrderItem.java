@@ -28,6 +28,10 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
+    @JoinColumn(name = "menu_id", nullable = false)
+    private Menu menu;
+
+    @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private MenuItem item;
 
@@ -46,9 +50,6 @@ public class OrderItem {
     private Double unitPriceSnapshot;
 
     private Integer quantity;
-
-    // @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private List<OrderItemAddon> selectedAddons;
 
     // subtotal for this order item (unit * qty + addons)
     private Double subtotal;

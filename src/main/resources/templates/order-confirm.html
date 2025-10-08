@@ -189,7 +189,7 @@
             background: var(--success);
             color: white;
         }
-        
+
         .btn-success:hover {
             transform: translateY(-2px);
             background: var(--success);
@@ -232,6 +232,7 @@
             border: none;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
+
         .modal-title {
             font-weight: 700;
             font-size: 20px;
@@ -300,6 +301,10 @@
                 font-size: 18px;
                 padding: 14px;
                 margin: 16px 0;
+            }
+
+            .total-amount #order-total {
+                font-weight: bold;
             }
 
             .btn {
@@ -383,14 +388,6 @@
             height: 85vh;
             max-height: 700px;
         }
-/* 
-        #orderConfirmModal .modal-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            border-bottom: none;
-            padding: 20px;
-            position: relative;
-        } */
 
         .modal-title {
             font-weight: 700;
@@ -589,30 +586,14 @@
                                 <th class="text-end">Total</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <!-- Items -->
-                            <tr th:each="item : ${orderConfirmSummary.items}">
-                                <td th:text="${item.itemName}"></td>
-                                <td th:text="${item.variantName}"></td>
-                                <td class="text-center" th:text="${item.quantity}"></td>
-                                <td class="text-end" th:text="'₱' + ${item.price}"></td>
-                                <td class="text-end" th:text="'₱' + ${item.totalPrice}"></td>
-                            </tr>
-
-                            <!-- Add-ons -->
-                            <tr th:each="addon : ${orderConfirmSummary.addons}">
-                                <td th:text="${addon.itemName}"></td>
-                                <td th:text="${addon.addonName}"></td>
-                                <td class="text-center" th:text="${addon.quantity}"></td>
-                                <td class="text-end" th:text="'₱' + ${addon.price}"></td>
-                                <td class="text-end" th:text="'₱' + ${addon.totalPrice}"></td>
-                            </tr>
+                        <tbody id="order-items-container">
+                            <!-- JavaScript will populate this -->
                         </tbody>
                     </table>
                 </div>
 
                 <div class="total-amount">
-                    Total: ₱<span th:text="${orderConfirmSummary.total}"></span>
+                    <strong>Total: ₱</strong><strong  id="order-total">0.00</strong >
                 </div>
 
                 <div class="payment-options">
@@ -662,18 +643,7 @@
                 <form method="post" th:action="@{/order/submit}" id="orderForm">
                     <input type="hidden" name="paymentMethod" id="paymentMethodInput">
                     <input type="hidden" name="unpaidReason" id="unpaidReasonInput">
-
-                    <div th:each="item, iterStat : ${orderConfirmSummary.items}">
-                        <input type="hidden" name="itemId" th:value="${item.itemId}" />
-                        <input type="hidden" name="variantId" th:value="${item.variantId}" />
-                        <input type="hidden" name="quantity" th:value="${item.quantity}" />
-                    </div>
-
-                    <div th:each="addon : ${orderConfirmSummary.addons}">
-                        <input type="hidden" name="addonItemIds" th:value="${addon.parentItemId}" />
-                        <input type="hidden" name="addonIds" th:value="${addon.addonId}" />
-                        <input type="hidden" name="addonQuantities" th:value="${addon.quantity}" />
-                    </div>
+                    <input type="hidden" name="orderJson" id="orderJsonInput">
                 </form>
             </div>
         </div>
@@ -758,12 +728,24 @@
             });
 
             confirmOrderBtn.addEventListener('click', function () {
-                // Set unpaid reason value if applicable
                 if (paymentMethodInput.value === 'unpaid') {
                     unpaidReasonInput.value = document.getElementById('reasonInput').value;
                 }
 
+                const orderJson = sessionStorage.getItem('pendingOrder');
+                if (!orderJson) {
+                    alert('Order data missing. Please start over.');
+                    return;
+                }
+
+                const orderJsonInput = document.getElementById('orderJsonInput');
+                orderJsonInput.value = orderJson;
+
+                console.log("Submitting order:", orderJson);
+
                 orderForm.submit();
+
+                sessionStorage.removeItem('pendingOrder');
             });
 
             // Better touch handling for mobile devices
@@ -785,7 +767,7 @@
 
             const cashOption = document.querySelector('.payment-method[data-method="cash"]');
             if (cashOption) {
-                cashOption.click(); // triggers the same logic as manual click
+                cashOption.click();
             }
         });
 
@@ -863,6 +845,107 @@
                 }
             });
         });
+
+        // Function to render the order from sessionStorage
+        function renderOrderFromStorage() {
+            const orderJson = sessionStorage.getItem('pendingOrder');
+
+            if (!orderJson) {
+                console.error('No order data found in sessionStorage');
+                window.location.href = '/order';
+                return;
+            }
+
+            try {
+                const order = JSON.parse(orderJson);
+                renderOrderItems(order.items || []);
+                renderAddons(order.addons || []);
+                updateTotal(order.total || 0);
+
+                console.log('Order rendered from sessionStorage:', order);
+            } catch (error) {
+                console.error('Error parsing order data:', error);
+                window.location.href = '/order';
+            }
+        }
+
+        // Render main items
+        function renderOrderItems(items) {
+            const container = document.getElementById('order-items-container');
+
+            if (!items.length) {
+                container.innerHTML = '<tr><td colspan="5" class="text-center">No items in order</td></tr>';
+                return;
+            }
+
+            let itemsHTML = '';
+
+            items.forEach(item => {
+                itemsHTML += `
+                    <tr>
+                        <td>${escapeHtml(item.itemName)}</td>
+                        <td>${escapeHtml(getVariantName(item))}</td>
+                        <td class="text-center">${item.quantity}</td>
+                        <td class="text-end">₱${(item.itemPrice || 0).toFixed(2)}</td>
+                        <td class="text-end">₱${((item.itemPrice || 0) * item.quantity).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = itemsHTML;
+        }
+
+        // Render addons
+        function renderAddons(addons) {
+            const container = document.getElementById('order-items-container');
+
+            if (!addons.length) return;
+
+            let addonsHTML = '';
+
+            addons.forEach(addon => {
+                addonsHTML += `
+                    <tr class="addon-row">
+                        <td><span class="text-muted">+ ${escapeHtml(addon.addonName)}</span></td>
+                        <td><span class="text-muted">Addon</span></td>
+                        <td class="text-center">${addon.quantity}</td>
+                        <td class="text-end">₱${(addon.price || 0).toFixed(2)}</td>
+                        <td class="text-end">₱${((addon.price || 0) * addon.quantity).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML += addonsHTML;
+        }
+
+        // Helper function to get variant name
+        function getVariantName(item) {
+            // Extract variant name from itemName if it contains it, or use a default
+            if (item.itemName && item.itemName.includes('(')) {
+                return item.itemName.split('(')[1].replace(')', '').trim();
+            }
+            return item.variantName || 'Standard';
+        }
+
+        // Update total display
+        function updateTotal(total) {
+            const totalElement = document.getElementById('order-total');
+            totalElement.textContent = total.toFixed(2);
+        }
+
+        // Security: Escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        renderOrderFromStorage();
     </script>
 </body>
 
